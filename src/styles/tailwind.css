@@ -1,0 +1,404 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Primary Colors - Deep medical blue */
+    --color-primary: #1E40AF; /* blue-800 */
+    --color-primary-foreground: #FFFFFF; /* white */
+    
+    /* Secondary Colors - Professional teal */
+    --color-secondary: #0F766E; /* teal-700 */
+    --color-secondary-foreground: #FFFFFF; /* white */
+    
+    /* Accent Colors - Critical alert red */
+    --color-accent: #DC2626; /* red-600 */
+    --color-accent-foreground: #FFFFFF; /* white */
+    
+    /* Background Colors */
+    --color-background: #FAFBFC; /* gray-50 */
+    --color-foreground: #1F2937; /* gray-800 */
+    
+    /* Surface Colors */
+    --color-card: #FFFFFF; /* white */
+    --color-card-foreground: #374151; /* gray-700 */
+    
+    --color-popover: #FFFFFF; /* white */
+    --color-popover-foreground: #374151; /* gray-700 */
+    
+    /* Muted Colors */
+    --color-muted: #F3F4F6; /* gray-100 */
+    --color-muted-foreground: #6B7280; /* gray-500 */
+    
+    /* Border & Input */
+    --color-border: rgba(148, 163, 184, 0.2); /* slate-400 with opacity */
+    --color-input: rgba(148, 163, 184, 0.2); /* slate-400 with opacity */
+    --color-ring: #1E40AF; /* blue-800 */
+    
+    /* Semantic Colors */
+    --color-success: #059669; /* emerald-600 */
+    --color-success-foreground: #FFFFFF; /* white */
+    
+    --color-warning: #D97706; /* amber-600 */
+    --color-warning-foreground: #FFFFFF; /* white */
+    
+    --color-error: #DC2626; /* red-600 */
+    --color-error-foreground: #FFFFFF; /* white */
+    
+    --color-destructive: #DC2626; /* red-600 */
+    --color-destructive-foreground: #FFFFFF; /* white */
+    
+    /* Radius */
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
+    --radius-xl: 24px;
+    
+    /* Shadows */
+    --shadow-sm: 0 2px 4px rgba(15, 23, 42, 0.08);
+    --shadow-md: 0 4px 8px rgba(15, 23, 42, 0.1);
+    --shadow-lg: 0 8px 16px rgba(15, 23, 42, 0.12);
+    --shadow-xl: 0 16px 32px rgba(15, 23, 42, 0.14);
+    --shadow-2xl: 0 32px 64px -12px rgba(15, 23, 42, 0.16);
+  }
+
+  .dark {
+    /* Primary Colors - Adjusted for dark mode */
+    --color-primary: #3B82F6; /* blue-500 */
+    --color-primary-foreground: #FFFFFF; /* white */
+    
+    /* Secondary Colors */
+    --color-secondary: #14B8A6; /* teal-500 */
+    --color-secondary-foreground: #FFFFFF; /* white */
+    
+    /* Accent Colors */
+    --color-accent: #EF4444; /* red-500 */
+    --color-accent-foreground: #FFFFFF; /* white */
+    
+    /* Background Colors */
+    --color-background: #0F172A; /* slate-900 */
+    --color-foreground: #E5E7EB; /* gray-200 - 92% white */
+    
+    /* Surface Colors */
+    --color-card: #1E293B; /* slate-800 */
+    --color-card-foreground: #E5E7EB; /* gray-200 */
+    
+    --color-popover: #1E293B; /* slate-800 */
+    --color-popover-foreground: #E5E7EB; /* gray-200 */
+    
+    /* Muted Colors */
+    --color-muted: #334155; /* slate-700 */
+    --color-muted-foreground: #94A3B8; /* slate-400 */
+    
+    /* Border & Input */
+    --color-border: rgba(148, 163, 184, 0.3); /* slate-400 with opacity */
+    --color-input: rgba(148, 163, 184, 0.3); /* slate-400 with opacity */
+    --color-ring: #3B82F6; /* blue-500 */
+    
+    /* Semantic Colors */
+    --color-success: #10B981; /* emerald-500 */
+    --color-success-foreground: #FFFFFF; /* white */
+    
+    --color-warning: #F59E0B; /* amber-500 */
+    --color-warning-foreground: #FFFFFF; /* white */
+    
+    --color-error: #EF4444; /* red-500 */
+    --color-error-foreground: #FFFFFF; /* white */
+    
+    --color-destructive: #EF4444; /* red-500 */
+    --color-destructive-foreground: #FFFFFF; /* white */
+    
+    /* Shadows - Glow effects for dark mode */
+    --shadow-sm: 0 2px 4px rgba(59, 130, 246, 0.1);
+    --shadow-md: 0 4px 8px rgba(59, 130, 246, 0.12);
+    --shadow-lg: 0 8px 16px rgba(59, 130, 246, 0.14);
+    --shadow-xl: 0 16px 32px rgba(59, 130, 246, 0.15);
+    --shadow-2xl: 0 32px 64px -12px rgba(59, 130, 246, 0.15);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Source Sans Pro', sans-serif;
+    font-weight: 600;
+  }
+
+  h1 {
+    font-size: 2.25rem;
+    line-height: 1.2;
+  }
+
+  h2 {
+    font-size: 1.875rem;
+    line-height: 1.25;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+    line-height: 1.3;
+  }
+
+  h4 {
+    font-size: 1.25rem;
+    line-height: 1.4;
+  }
+
+  h5 {
+    font-size: 1.125rem;
+    line-height: 1.5;
+  }
+
+  .caption {
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    letter-spacing: 0.025em;
+  }
+
+  .data-text {
+    font-family: 'JetBrains Mono', monospace;
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (max-width: 768px) {
+    body {
+      font-size: 15px;
+    }
+  }
+}
+
+@layer components {
+  .role-navigation-header {
+    @apply fixed top-0 left-0 right-0 z-[900] h-[60px] bg-card border-b border-border shadow-sm;
+  }
+
+  .role-navigation-header-container {
+    @apply h-full max-w-[1536px] mx-auto px-6 flex items-center justify-between;
+  }
+
+  .role-navigation-header-logo {
+    @apply flex items-center gap-3 cursor-pointer transition-transform duration-250 hover:scale-[1.02];
+  }
+.role-navigation-header-logo-icon  {
+    @apply w-10 h-10 rounded-lg flex items-center justify-center overflow-hidden;
+  }
+
+  .role-navigation-header-logo-text {
+    @apply text-xl font-semibold text-foreground;
+  }
+
+  .role-navigation-header-role-badge {
+    @apply px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-250;
+  }
+
+  .role-navigation-header-actions {
+    @apply flex items-center gap-4;
+  }
+.patient-context-breadcrumb  {
+    @apply relative border-b border-border py-3 px-6;
+  }
+
+  .patient-context-breadcrumb-container {
+    @apply max-w-[1536px] mx-auto flex items-center gap-2 text-sm;
+  }
+
+  .patient-context-breadcrumb-item {
+    @apply flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors duration-250 cursor-pointer;
+  }
+
+  .patient-context-breadcrumb-separator {
+    @apply text-muted-foreground;
+  }
+
+  .patient-context-breadcrumb-current {
+    @apply text-foreground font-medium;
+  }
+
+  .emergency-alert-banner {
+    @apply fixed top-[60px] left-0 right-0 z-[1000] bg-card border-b-2 shadow-lg;
+    animation: slideDown 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes slideDown {
+    from {
+      transform: translateY(-100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  .emergency-alert-banner-container {
+    @apply max-w-[1536px] mx-auto px-6 py-4 flex items-start gap-4;
+  }
+
+  .emergency-alert-banner-icon {
+    @apply flex-shrink-0 w-6 h-6 mt-0.5;
+  }
+
+  .emergency-alert-banner-content {
+    @apply flex-1 min-w-0;
+  }
+
+  .emergency-alert-banner-title {
+    @apply font-semibold text-base mb-1;
+  }
+
+  .emergency-alert-banner-message {
+    @apply text-sm opacity-90;
+  }
+
+  .emergency-alert-banner-actions {
+    @apply flex items-center gap-2 mt-3;
+  }
+
+  .emergency-alert-banner-close {
+    @apply flex-shrink-0 w-6 h-6 cursor-pointer opacity-70 hover:opacity-100 transition-opacity duration-250;
+  }
+
+  .session-security-indicator {
+    @apply relative;
+  }
+.session-security-indicator-button  {
+    @apply flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-muted transition-all duration-250 cursor-pointer;
+  }
+
+  .session-security-indicator-icon {
+    @apply w-5 h-5;
+  }
+
+  .session-security-indicator-text {
+    @apply text-sm font-medium;
+  }
+
+  .session-security-indicator-dropdown {
+    @apply absolute top-full right-0 mt-2 w-80 bg-card border border-border rounded-xl shadow-xl overflow-hidden;
+    animation: fadeIn 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+}
+
+  .session-security-indicator-dropdown-header  {
+    @apply px-4 py-3 border-b border-border;
+  }
+
+  .session-security-indicator-dropdown-title {
+    @apply font-semibold text-sm;
+  }
+
+  .session-security-indicator-dropdown-content {
+    @apply p-4 space-y-4;
+  }
+
+  .session-security-indicator-info-row {
+    @apply flex items-center justify-between text-sm;
+  }
+
+  .session-security-indicator-info-label {
+    @apply text-muted-foreground;
+  }
+
+  .session-security-indicator-info-value {
+    @apply font-medium;
+  }
+.session-security-indicator-privacy-toggle  {
+    @apply flex items-center justify-between p-3 rounded-lg;
+  }
+
+  .session-security-indicator-privacy-label {
+    @apply text-sm font-medium;
+  }
+
+  @media (max-width: 768px) {
+    .role-navigation-header-container {
+      @apply px-4;
+    }
+
+    .role-navigation-header-logo-text {
+      @apply text-lg;
+    }
+
+    .patient-context-breadcrumb-container {
+      @apply px-4;
+    }
+
+    .emergency-alert-banner-container {
+      @apply px-4 flex-col;
+    }
+
+    .emergency-alert-banner-actions {
+      @apply flex-col w-full;
+    }
+
+    .session-security-indicator-dropdown {
+      @apply w-72;
+    }
+  }
+}
+
+@layer utilities {
+  .transition-clinical {
+    transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .transition-spring {
+    transition: all 250ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+.focus-clinical  {
+    @apply outline-none ring-ring ring-offset-background;
+  }
+
+  .text-measure {
+    max-width: 70ch;
+  }
+
+  .shadow-elevation-0 {
+    box-shadow: none;
+  }
+
+  .shadow-elevation-1 {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .shadow-elevation-2 {
+    box-shadow: var(--shadow-md);
+  }
+
+  .shadow-elevation-3 {
+    box-shadow: var(--shadow-lg);
+  }
+
+  .shadow-elevation-4 {
+    box-shadow: var(--shadow-xl);
+  }
+
+  .shadow-elevation-5 {
+    box-shadow: var(--shadow-2xl);
+  }
+}
