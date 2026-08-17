@@ -7,15 +7,9 @@ import CareOSChatbot from "./components/CareOSChatbot";
 ========================================================= */
 
 const CareOSSplash = ({ onFinish }) => {
-  const [fadeOut, setFadeOut] = useState(false);
-
   useEffect(() => {
     const timer = setTimeout(() => {
-      setFadeOut(true);
-
-      setTimeout(() => {
-        onFinish();
-      }, 700);
+      onFinish();
     }, 1800);
 
     return () => clearTimeout(timer);
@@ -23,11 +17,15 @@ const CareOSSplash = ({ onFinish }) => {
 
   return (
     <div
-      className={`fixed inset-0 z-[9999] flex items-center justify-center bg-white transition-all duration-700 ${
-        fadeOut
-          ? "opacity-0 scale-105"
-          : "opacity-100 scale-100"
-      }`}
+      className="
+        fixed
+        inset-0
+        z-[9999]
+        flex
+        items-center
+        justify-center
+        bg-white
+      "
     >
       {/* Soft background glow */}
 
@@ -42,6 +40,7 @@ const CareOSSplash = ({ onFinish }) => {
       {/* Main splash content */}
 
       <div className="relative flex flex-col items-center justify-center">
+        
         {/* Logo */}
 
         <div className="splash-logo">
@@ -111,6 +110,8 @@ const CareOSSplash = ({ onFinish }) => {
 
       <style>
         {`
+          /* Logo Animation */
+
           @keyframes careosLogoEntry {
             0% {
               opacity: 0;
@@ -128,6 +129,9 @@ const CareOSSplash = ({ onFinish }) => {
             }
           }
 
+
+          /* Title Animation */
+
           @keyframes careosTitleEntry {
             0% {
               opacity: 0;
@@ -140,6 +144,9 @@ const CareOSSplash = ({ onFinish }) => {
             }
           }
 
+
+          /* Tagline Animation */
+
           @keyframes careosTaglineEntry {
             0% {
               opacity: 0;
@@ -149,6 +156,9 @@ const CareOSSplash = ({ onFinish }) => {
               opacity: 1;
             }
           }
+
+
+          /* Loading Animation */
 
           @keyframes careosLoader {
             0% {
@@ -160,6 +170,9 @@ const CareOSSplash = ({ onFinish }) => {
             }
           }
 
+
+          /* Logo */
+
           .splash-logo {
             animation:
               careosLogoEntry
@@ -168,8 +181,12 @@ const CareOSSplash = ({ onFinish }) => {
               forwards;
           }
 
+
+          /* CareOS Text */
+
           .splash-title {
             opacity: 0;
+
             animation:
               careosTitleEntry
               .7s
@@ -183,8 +200,12 @@ const CareOSSplash = ({ onFinish }) => {
             letter-spacing: -2px;
           }
 
+
+          /* Tagline */
+
           .splash-tagline {
             opacity: 0;
+
             animation:
               careosTaglineEntry
               .7s
@@ -193,8 +214,12 @@ const CareOSSplash = ({ onFinish }) => {
               forwards;
           }
 
+
+          /* Loader */
+
           .splash-loader {
             width: 0%;
+
             animation:
               careosLoader
               1.35s
@@ -207,6 +232,7 @@ const CareOSSplash = ({ onFinish }) => {
     </div>
   );
 };
+
 
 /* =========================================================
    MAIN APP
@@ -225,9 +251,11 @@ function App() {
 
       <Routes />
 
+
       {/* CareOS AI Chatbot */}
 
       <CareOSChatbot />
+
 
       {/* Splash Screen */}
 

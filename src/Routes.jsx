@@ -1,11 +1,14 @@
 import React from "react";
-import { BrowserRouter, Routes as RouterRoutes, Route } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes as RouterRoutes,
+  Route,
+} from "react-router-dom";
 
 import ScrollToTop from "components/ScrollToTop";
 import ErrorBoundary from "components/ErrorBoundary";
 import NotFound from "pages/NotFound";
 
-import CareOSIntro from "./pages/careos-intro";
 import RoleSelectionLanding from "./pages/role-selection-landing";
 
 import PatientFamilyDashboard from "./pages/patient-family-dashboard";
@@ -22,25 +25,14 @@ const Routes = () => {
         <RouterRoutes>
 
           {/* =====================================================
-              CAREOS INTRO / SPLASH ANIMATION
-              This will open first when website starts
+              CAREOS HOME / ROLE SELECTION
+              Light splash ke baad ye page directly open hoga
           ====================================================== */}
 
           <Route
             path="/"
-            element={<CareOSIntro />}
+            element={<RoleSelectionLanding />}
           />
-
-          <Route
-            path="/careos-intro"
-            element={<CareOSIntro />}
-          />
-
-
-          {/* =====================================================
-              CAREOS HOME / ROLE SELECTION
-              Opens automatically after intro animation
-          ====================================================== */}
 
           <Route
             path="/role-selection-landing"
