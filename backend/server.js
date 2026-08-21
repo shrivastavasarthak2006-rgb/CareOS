@@ -1,7 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenAI } from "@google/genai";
 
 dotenv.config();
 
@@ -14,8 +14,10 @@ app.use(express.json());
    GEMINI API KEY
 ================================ */
 
-if (!process.env.GEMINI_API_KEY) {
-  console.log("❌ GEMINI_API_KEY MISSING");
+const apiKey = process.env.GEMINI_API_KEY;
+
+if (!apiKey) {
+  console.error("❌ GEMINI_API_KEY MISSING");
 } else {
   console.log("✅ GEMINI_API_KEY loaded");
 }
@@ -24,15 +26,11 @@ if (!process.env.GEMINI_API_KEY) {
    GEMINI SETUP
 ================================ */
 
-const genAI = new GoogleGenerativeAI(
-  process.env.GEMINI_API_KEY
-);
-
-const model = genAI.getGenerativeModel({
-  model: "gemini-2.5-flash",
+const ai = new GoogleGenAI({
+  apiKey: apiKey,
 });
 
-console.log("✅ Gemini 2.5 Flash loaded");
+console.log("✅ Gemini AI initialized");
 
 /* ================================
    HEALTH CHECK
@@ -52,11 +50,18 @@ app.get("/", (req, res) => {
 
 app.post("/chat", async (req, res) => {
   try {
-    const userMessage = req.body.message?.trim();
+    const userMessage = req.body?.message?.trim();
 
     if (!userMessage) {
       return res.status(400).json({
         reply: "Please enter a message",
+      });
+    }
+
+    if (!apiKey) {
+      console.error("❌ Gemini API key is missing");
+      return res.status(500).json({
+        reply: "Gemini API key is not configured.",
       });
     }
 
@@ -74,7 +79,7 @@ Your role:
 - Base responses on evidence-based medical knowledge.
 - Do not claim to diagnose a patient.
 - Do not replace a qualified doctor.
-- Always recommend consulting a doctor for diagnosis or treatment when appropriate.
+- Recommend consulting a doctor for diagnosis or treatment when appropriate.
 - For emergencies, advise the user to seek immediate emergency medical care.
 
 Current date:
@@ -84,9 +89,12 @@ User question:
 ${userMessage}
 `;
 
-    const result = await model.generateContent(prompt);
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: prompt,
+    });
 
-    const reply = result.response.text();
+    const reply = response.text;
 
     console.log("✅ AI response generated");
 
@@ -97,8 +105,7 @@ ${userMessage}
     });
 
   } catch (error) {
-    console.error("🔥 GEMINI CHAT ERROR:");
-    console.error(error);
+    console.error("🔥 GEMINI CHAT ERROR:", error);
 
     return res.status(500).json({
       reply: "Service temporarily unavailable. Please try again.",
