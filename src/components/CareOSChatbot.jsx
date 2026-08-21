@@ -17,7 +17,7 @@ const CareOSChatbot = () => {
      BACKEND URL
   ========================================================= */
 
-const API_URL = "http://localhost:5000/api/chat";
+const API_URL = "https://care-os-s7sr.vercel.app/chat";
 
   /* =========================================================
      LANGUAGE CONTENT
