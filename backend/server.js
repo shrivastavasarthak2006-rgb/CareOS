@@ -10,19 +10,34 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+/* ================================
+   GEMINI API KEY
+================================ */
+
 if (!process.env.GEMINI_API_KEY) {
   console.log("❌ GEMINI_API_KEY MISSING");
 } else {
   console.log("✅ GEMINI_API_KEY loaded");
 }
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+/* ================================
+   GEMINI SETUP
+================================ */
+
+const genAI = new GoogleGenerativeAI(
+  process.env.GEMINI_API_KEY
+);
 
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
+  model: "gemini-2.5-flash",
 });
 
-// HEALTH CHECK
+console.log("✅ Gemini 2.5 Flash loaded");
+
+/* ================================
+   HEALTH CHECK
+================================ */
+
 app.get("/", (req, res) => {
   res.json({
     status: "OK",
@@ -31,7 +46,10 @@ app.get("/", (req, res) => {
   });
 });
 
-// CHAT
+/* ================================
+   CHAT API
+================================ */
+
 app.post("/chat", async (req, res) => {
   try {
     const userMessage = req.body.message?.trim();
@@ -42,18 +60,27 @@ app.post("/chat", async (req, res) => {
       });
     }
 
+    console.log(
+      "🤖 Chat request:",
+      userMessage.substring(0, 100)
+    );
+
     const prompt = `
 You are CareOS Medical Assistant for healthcare professionals and patients.
 
-Medical guidelines:
-- Use appropriate medical terminology.
-- Base responses on evidence-based medicine.
-- Always advise the user to consult a doctor for diagnosis or treatment.
-- Do not claim to replace a medical professional.
+Your role:
+- Provide general medical information.
+- Use clear and appropriate medical terminology.
+- Base responses on evidence-based medical knowledge.
+- Do not claim to diagnose a patient.
+- Do not replace a qualified doctor.
+- Always recommend consulting a doctor for diagnosis or treatment when appropriate.
+- For emergencies, advise the user to seek immediate emergency medical care.
 
-Current date: ${new Date().toLocaleDateString()}
+Current date:
+${new Date().toLocaleDateString()}
 
-User's question:
+User question:
 ${userMessage}
 `;
 
@@ -61,17 +88,40 @@ ${userMessage}
 
     const reply = result.response.text();
 
-    res.json({
-      reply: reply?.trim() || "Medical assistant ready to help!",
+    console.log("✅ AI response generated");
+
+    return res.json({
+      reply:
+        reply?.trim() ||
+        "Medical assistant ready to help!",
     });
 
   } catch (error) {
-    console.error("🔥 CHAT ERROR:", error);
+    console.error("🔥 GEMINI CHAT ERROR:");
+    console.error(error);
 
-    res.status(500).json({
+    return res.status(500).json({
       reply: "Service temporarily unavailable. Please try again.",
     });
   }
 });
+
+/* ================================
+   LOCAL DEVELOPMENT
+================================ */
+
+const PORT = process.env.PORT || 3000;
+
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(
+      `🚀 CareOS Backend running on http://localhost:${PORT}`
+    );
+  });
+}
+
+/* ================================
+   VERCEL
+================================ */
 
 export default app;
