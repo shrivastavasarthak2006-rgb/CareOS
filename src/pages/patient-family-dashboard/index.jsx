@@ -1,45 +1,27 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+
 import RoleNavigationHeader from '../../components/ui/RoleNavigationHeader';
 import PatientContextBreadcrumb from '../../components/ui/PatientContextBreadcrumb';
-import EmergencyAlertBanner from '../../components/ui/EmergencyAlertBanner';
 import WelcomeSection from './components/WelcomeSection';
 import ProgressTimeline from './components/ProgressTimeline';
 import VitalSignsSummary from './components/VitalSignsSummary';
 import CareActivitiesSection from './components/CareActivitiesSection';
 import InteractiveSection from './components/InteractiveSection';
 import Button from '../../components/ui/Button';
-import Icon from '../../components/AppIcon';
 
 const PatientFamilyDashboard = () => {
   const navigate = useNavigate();
-  const [privacyMode, setPrivacyMode] = useState(false);
-  const [emergencyAlerts, setEmergencyAlerts] = useState([]);
-  const [simpleNotesView, setSimpleNotesView] = useState(true); // 🔥 TOGGLE STATE
 
-  useEffect(() => {
-    setEmergencyAlerts([
-      {
-        id: 'alert-001',
-        severity: 'medium',
-        title: 'Scheduled Update',
-        message:
-          'Dr.Tanushree Chauhanwill provide a care update at 2:00 PM today. You can join via video call or phone.',
-        roleVisibility: ['patient', 'all'],
-        actions: [
-          { label: 'Join Video Call', primary: true },
-          { label: 'Call Instead', primary: false }
-        ]
-      }
-    ]);
-  }, []);
+  const [privacyMode, setPrivacyMode] = useState(false);
+  const [simpleNotesView, setSimpleNotesView] = useState(true);
 
   const patientData = {
-    displayName: 'Avni Sharma',
+    displayName: 'Patient!!',
     id: 'PT-2024-001'
   };
 
-  // 🔥 CLINICAL NOTES + AI HINDI EXPLANATION (MOCK DATA)
+  // CLINICAL NOTES + AI HINDI EXPLANATION
   const clinicalNotes = [
     {
       id: 1,
@@ -75,6 +57,7 @@ const PatientFamilyDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-teal-50/50 via-mint-50/30 to-white">
+
       <RoleNavigationHeader
         currentRole="patient"
         privacyMode={privacyMode}
@@ -82,13 +65,6 @@ const PatientFamilyDashboard = () => {
       />
 
       <div className="pt-[60px]">
-        <EmergencyAlertBanner
-          alerts={emergencyAlerts}
-          onDismiss={(id) =>
-            setEmergencyAlerts((prev) => prev.filter((a) => a.id !== id))
-          }
-          currentRole="patient"
-        />
 
         <PatientContextBreadcrumb
           patientData={patientData}
@@ -98,7 +74,12 @@ const PatientFamilyDashboard = () => {
         />
 
         <main className="max-w-[1536px] mx-auto px-4 py-8 space-y-8">
-          <WelcomeSection patientName={patientData.displayName} carePhase="Recovery" />
+
+          <WelcomeSection
+            patientName={patientData.displayName}
+            carePhase="Recovery"
+          />
+
           <ProgressTimeline currentPhaseIndex={2} />
 
           <VitalSignsSummary />
@@ -107,9 +88,11 @@ const PatientFamilyDashboard = () => {
 
           <InteractiveSection />
 
-          {/* 🔥 AI NOTES SECTION */}
+          {/* AI NOTES SECTION */}
           <div className="bg-white rounded-2xl p-6 shadow-elevation-1">
+
             <div className="flex justify-between items-center mb-4">
+
               <h3 className="text-xl font-semibold text-foreground">
                 Doctor & Nurse Notes
               </h3>
@@ -120,28 +103,37 @@ const PatientFamilyDashboard = () => {
               >
                 {simpleNotesView ? 'Clinical View' : 'Aasaan Hindi'}
               </button>
+
             </div>
 
             <div className="space-y-4">
+
               {clinicalNotes.map((note) => (
                 <div
                   key={note.id}
                   className="border border-muted rounded-xl p-4 bg-muted/20"
                 >
+
                   <div className="flex justify-between items-center mb-2">
+
                     <div className="font-semibold text-foreground">
                       {note.author}
+
                       <span className="ml-2 text-xs text-muted-foreground">
                         ({note.role})
                       </span>
                     </div>
+
                     <div className="text-xs text-muted-foreground">
                       {note.time}
                     </div>
+
                   </div>
 
                   <p className="text-sm text-foreground leading-relaxed">
-                    {simpleNotesView ? note.aiHindiText : note.clinicalText}
+                    {simpleNotesView
+                      ? note.aiHindiText
+                      : note.clinicalText}
                   </p>
 
                   {simpleNotesView && (
@@ -150,12 +142,15 @@ const PatientFamilyDashboard = () => {
                       decision doctor ka hota hai.
                     </p>
                   )}
+
                 </div>
               ))}
+
             </div>
           </div>
 
           <div className="text-center">
+
             <Button
               variant="default"
               size="lg"
@@ -165,7 +160,9 @@ const PatientFamilyDashboard = () => {
             >
               View Detailed Analytics
             </Button>
+
           </div>
+
         </main>
       </div>
     </div>

@@ -15,6 +15,7 @@ import PatientFamilyDashboard from "./pages/patient-family-dashboard";
 import PatientDetailAnalytics from "./pages/patient-detailed-analytics";
 import DoctorClinicalDashboard from "./pages/doctor-clinical-dashboard";
 import NurseOperationalDashboard from "./pages/nurse-operational-dashboard";
+import ReceptionDashboard from "./pages/reception-dashboard";
 
 const Routes = () => {
   return (
@@ -26,7 +27,6 @@ const Routes = () => {
 
           {/* =====================================================
               CAREOS HOME / ROLE SELECTION
-              Light splash ke baad ye page directly open hoga
           ====================================================== */}
 
           <Route
@@ -72,6 +72,16 @@ const Routes = () => {
           <Route
             path="/nurse-operational-dashboard"
             element={<NurseOperationalDashboard />}
+          />
+
+
+          {/* =====================================================
+              RECEPTION
+          ====================================================== */}
+
+          <Route
+            path="/reception-dashboard"
+            element={<ReceptionDashboard />}
           />
 
 

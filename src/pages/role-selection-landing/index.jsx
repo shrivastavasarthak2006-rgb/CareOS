@@ -27,6 +27,12 @@ const RoleSelectionLanding = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  // Patient authentication state
+  const [patientAuthMode, setPatientAuthMode] = useState(null); // "new" | "existing"
+  const [aadhaar, setAadhaar] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+
   /* =========================================================
      ROLES
      ONLY DOCTOR, NURSE AND PATIENT/FAMILY ARE ACTIVE
@@ -61,8 +67,8 @@ const RoleSelectionLanding = () => {
       subtitle: "Manage & Coordinate",
       icon: UserCog,
       color: "#FF9F2D",
-      active: false,
-      route: null,
+      active: true,
+      route: "/reception-dashboard",
       position: "admin",
     },
 
@@ -122,6 +128,10 @@ const RoleSelectionLanding = () => {
     setUsername("");
     setPassword("");
     setError("");
+    setPatientAuthMode(null);
+    setAadhaar("");
+    setOtp("");
+    setOtpSent(false);
   };
 
   /* =========================================================
@@ -133,6 +143,10 @@ const RoleSelectionLanding = () => {
     setUsername("");
     setPassword("");
     setError("");
+    setPatientAuthMode(null);
+    setAadhaar("");
+    setOtp("");
+    setOtpSent(false);
   };
 
   /* =========================================================
@@ -149,6 +163,61 @@ const RoleSelectionLanding = () => {
       }
     } else {
       setError("Invalid Username or Password");
+    }
+  };
+
+  /* =========================================================
+     PATIENT - NEW USER / AADHAAR + OTP
+  ========================================================= */
+
+  const handleSendOtp = (e) => {
+    e.preventDefault();
+    setError("");
+
+    const cleanAadhaar = aadhaar.replace(/\D/g, "");
+
+    if (cleanAadhaar.length !== 12) {
+      setError("Please enter a valid 12-digit Aadhaar number.");
+      return;
+    }
+
+    // Frontend demo flow. Connect this action to your OTP API in production.
+    setOtpSent(true);
+  };
+
+  const handleVerifyOtp = (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (otp.length !== 6) {
+      setError("Please enter a valid 6-digit OTP.");
+      return;
+    }
+
+    // Frontend demo flow. Replace with backend OTP verification.
+    if (selectedRole?.route) {
+      navigate(selectedRole.route);
+      closeLogin();
+    }
+  };
+
+  /* =========================================================
+     PATIENT - EXISTING USER
+  ========================================================= */
+
+  const handlePatientExistingLogin = (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!username.trim() || !password.trim()) {
+      setError("Please enter User ID and Password.");
+      return;
+    }
+
+    // Frontend demo flow. Connect this action to your patient login API.
+    if (selectedRole?.route) {
+      navigate(selectedRole.route);
+      closeLogin();
     }
   };
 
@@ -405,7 +474,10 @@ const RoleSelectionLanding = () => {
                 <RoleNode
                   key={role.id}
                   role={role}
-                  onClick={() => openLogin(role)}
+                  onClick={() => 
+                    role.id==="admin"
+                    ? navigate("/reception-dashboard")
+                    : openLogin(role)}
                 />
               ))}
 
@@ -533,66 +605,259 @@ const RoleSelectionLanding = () => {
             </div>
 
 
-            {/* LOGIN FORM */}
+            {/* PATIENT LOGIN FLOW */}
+            {selectedRole?.id === "patient" ? (
+              <div>
+                {/* STEP 1: Choose New User / Existing User */}
+                {!patientAuthMode && (
+                  <div className="space-y-4">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPatientAuthMode("new");
+                        setError("");
+                      }}
+                      className="w-full text-left p-4 rounded-[14px] border border-[#DCE2ED] hover:border-[#3675EE] hover:bg-[#F7F9FF] transition"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-full bg-[#EEF4FF] flex items-center justify-center">
+                          <Users size={22} className="text-[#3675EE]" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-[#102A56]">
+                            New User
+                          </div>
+                          <div className="text-sm text-[#70819E] mt-1">
+                            First time using CareOS? Register with Aadhaar.
+                          </div>
+                        </div>
+                      </div>
+                    </button>
 
-            <form onSubmit={handleLogin}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPatientAuthMode("existing");
+                        setError("");
+                      }}
+                      className="w-full text-left p-4 rounded-[14px] border border-[#DCE2ED] hover:border-[#3675EE] hover:bg-[#F7F9FF] transition"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-full bg-[#F3EEFF] flex items-center justify-center">
+                          <LockKeyhole size={22} className="text-[#7A45E8]" />
+                        </div>
+                        <div>
+                          <div className="font-bold text-[#102A56]">
+                            Existing User
+                          </div>
+                          <div className="text-sm text-[#70819E] mt-1">
+                            Already have a CareOS account? Login with User ID.
+                          </div>
+                        </div>
+                      </div>
+                    </button>
 
-              {/* USERNAME */}
+                    {error && (
+                      <p className="text-red-500 text-sm mt-3">{error}</p>
+                    )}
+                  </div>
+                )}
 
-              <label className="block text-sm font-semibold text-[#30486D] mb-2">
-                Username
-              </label>
+                {/* NEW USER: AADHAAR + OTP */}
+                {patientAuthMode === "new" && (
+                  <form onSubmit={otpSent ? handleVerifyOtp : handleSendOtp}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPatientAuthMode(null);
+                        setError("");
+                        setAadhaar("");
+                        setOtp("");
+                        setOtpSent(false);
+                      }}
+                      className="text-sm font-semibold text-[#3675EE] mb-5 hover:underline"
+                    >
+                      ← Back
+                    </button>
 
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="Enter username"
-                className="w-full h-[48px] px-4 rounded-[10px] border border-[#DCE2ED] outline-none focus:border-[#3675EE] focus:ring-2 focus:ring-blue-100 mb-4"
-              />
+                    {!otpSent ? (
+                      <>
+                        <label className="block text-sm font-semibold text-[#30486D] mb-2">
+                          Aadhaar Number
+                        </label>
 
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={12}
+                          value={aadhaar}
+                          onChange={(e) =>
+                            setAadhaar(
+                              e.target.value.replace(/\D/g, "").slice(0, 12)
+                            )
+                          }
+                          placeholder="Enter 12-digit Aadhaar number"
+                          className="w-full h-[48px] px-4 rounded-[10px] border border-[#DCE2ED] outline-none focus:border-[#3675EE] focus:ring-2 focus:ring-blue-100"
+                        />
 
-              {/* PASSWORD */}
+                        <p className="text-xs text-[#8996AA] mt-2">
+                          An OTP will be sent to your registered mobile number.
+                        </p>
 
-              <label className="block text-sm font-semibold text-[#30486D] mb-2">
-                Password
-              </label>
+                        {error && (
+                          <p className="text-red-500 text-sm mt-3">{error}</p>
+                        )}
 
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
-                className="w-full h-[48px] px-4 rounded-[10px] border border-[#DCE2ED] outline-none focus:border-[#3675EE] focus:ring-2 focus:ring-blue-100"
-              />
+                        <button
+                          type="submit"
+                          className="w-full h-[50px] mt-6 rounded-[10px] bg-gradient-to-r from-[#2674ED] to-[#4A52E8] text-white font-bold shadow-lg hover:opacity-95 transition"
+                        >
+                          Send OTP
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <label className="block text-sm font-semibold text-[#30486D] mb-2">
+                          Enter OTP
+                        </label>
 
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          maxLength={6}
+                          value={otp}
+                          onChange={(e) =>
+                            setOtp(
+                              e.target.value.replace(/\D/g, "").slice(0, 6)
+                            )
+                          }
+                          placeholder="Enter 6-digit OTP"
+                          className="w-full h-[48px] px-4 rounded-[10px] border border-[#DCE2ED] outline-none focus:border-[#3675EE] focus:ring-2 focus:ring-blue-100"
+                        />
 
-              {/* ERROR */}
+                        <p className="text-xs text-[#8996AA] mt-2">
+                          OTP sent successfully. Please enter it to continue.
+                        </p>
 
-              {error && (
-                <p className="text-red-500 text-sm mt-3">
-                  {error}
-                </p>
-              )}
+                        {error && (
+                          <p className="text-red-500 text-sm mt-3">{error}</p>
+                        )}
 
+                        <button
+                          type="submit"
+                          className="w-full h-[50px] mt-6 rounded-[10px] bg-gradient-to-r from-[#2674ED] to-[#4A52E8] text-white font-bold shadow-lg hover:opacity-95 transition"
+                        >
+                          Verify OTP
+                        </button>
 
-              {/* LOGIN BUTTON */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setOtpSent(false);
+                            setOtp("");
+                            setError("");
+                          }}
+                          className="w-full mt-3 text-sm font-semibold text-[#3675EE] hover:underline"
+                        >
+                          Change Aadhaar Number
+                        </button>
+                      </>
+                    )}
+                  </form>
+                )}
 
-              <button
-                type="submit"
-                className="w-full h-[50px] mt-6 rounded-[10px] bg-gradient-to-r from-[#2674ED] to-[#4A52E8] text-white font-bold shadow-lg hover:opacity-95 transition"
-              >
-                Login
-              </button>
+                {/* EXISTING USER: USER ID + PASSWORD */}
+                {patientAuthMode === "existing" && (
+                  <form onSubmit={handlePatientExistingLogin}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPatientAuthMode(null);
+                        setError("");
+                        setUsername("");
+                        setPassword("");
+                      }}
+                      className="text-sm font-semibold text-[#3675EE] mb-5 hover:underline"
+                    >
+                      ← Back
+                    </button>
 
-            </form>
+                    <label className="block text-sm font-semibold text-[#30486D] mb-2">
+                      User ID
+                    </label>
 
+                    <input
+                      type="text"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Enter User ID"
+                      className="w-full h-[48px] px-4 rounded-[10px] border border-[#DCE2ED] outline-none focus:border-[#3675EE] focus:ring-2 focus:ring-blue-100 mb-4"
+                    />
 
-            {/* DEMO CREDENTIALS */}
+                    <label className="block text-sm font-semibold text-[#30486D] mb-2">
+                      Password
+                    </label>
 
-            <p className="text-center text-xs text-[#8996AA] mt-5">
-              Demo credentials: <b>admin</b> / <b>1234</b>
-            </p>
+                    <input
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter password"
+                      className="w-full h-[48px] px-4 rounded-[10px] border border-[#DCE2ED] outline-none focus:border-[#3675EE] focus:ring-2 focus:ring-blue-100"
+                    />
+
+                    {error && (
+                      <p className="text-red-500 text-sm mt-3">{error}</p>
+                    )}
+
+                    <button
+                      type="submit"
+                      className="w-full h-[50px] mt-6 rounded-[10px] bg-gradient-to-r from-[#2674ED] to-[#4A52E8] text-white font-bold shadow-lg hover:opacity-95 transition"
+                    >
+                      Login
+                    </button>
+                  </form>
+                )}
+              </div>
+            ) : (
+              /* EXISTING LOGIN FLOW FOR DOCTOR / NURSE / ADMIN */
+              <form onSubmit={handleLogin}>
+                <label className="block text-sm font-semibold text-[#30486D] mb-2">
+                  Username
+                </label>
+
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Enter username"
+                  className="w-full h-[48px] px-4 rounded-[10px] border border-[#DCE2ED] outline-none focus:border-[#3675EE] focus:ring-2 focus:ring-blue-100 mb-4"
+                />
+
+                <label className="block text-sm font-semibold text-[#30486D] mb-2">
+                  Password
+                </label>
+
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter password"
+                  className="w-full h-[48px] px-4 rounded-[10px] border border-[#DCE2ED] outline-none focus:border-[#3675EE] focus:ring-2 focus:ring-blue-100"
+                />
+
+                {error && (
+                  <p className="text-red-500 text-sm mt-3">{error}</p>
+                )}
+
+                <button
+                  type="submit"
+                  className="w-full h-[50px] mt-6 rounded-[10px] bg-gradient-to-r from-[#2674ED] to-[#4A52E8] text-white font-bold shadow-lg hover:opacity-95 transition"
+                >
+                  Login
+                </button>
+              </form>
+            )}
 
           </div>
 

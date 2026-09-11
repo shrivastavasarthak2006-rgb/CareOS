@@ -44,7 +44,7 @@ const VitalSignsChart = ({ data = [], selectedPatient = null }) => {
         <div>
           <h2 className="text-xl font-semibold text-foreground mb-1 flex items-center gap-2">
             <Icon name="Activity" size={24} className="text-primary" />
-            Real-Time Vital Signs
+            Real-Time Vital Signs of Monika
           </h2>
           {selectedPatient && (
             <p className="text-sm text-muted-foreground">
