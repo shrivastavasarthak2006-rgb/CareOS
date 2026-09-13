@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 
-const API_URL = "http://127.0.0.1:5000/api/patients";
+const API_URL = "https://careos-gtd7.onrender.com/api/patients";
 
 const ReceptionDashboard = () => {
   const [patients, setPatients] = useState([]);

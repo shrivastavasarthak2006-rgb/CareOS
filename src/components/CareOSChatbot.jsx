@@ -17,7 +17,7 @@ const CareOSChatbot = () => {
      BACKEND URL
   ========================================================= */
 
-const API_URL = "https://care-os-s7sr.vercel.app/chat";
+  const API_URL = "https://careos-gtd7.onrender.com/chat";
 
   /* =========================================================
      LANGUAGE CONTENT
@@ -79,7 +79,7 @@ const API_URL = "https://care-os-s7sr.vercel.app/chat";
         "नमस्ते! 👋 मैं CareOS AI Assistant हूँ। मैं आपकी स्वास्थ्य संबंधी जानकारी और guidance में मदद कर सकता हूँ।",
 
       serverError:
-        "⚠️ Server से connection नहीं हो पा रहा है। Please make sure CareOS backend is running on port 5000.",
+        "⚠️ Server से connection नहीं हो पा रहा है। Please try again.",
     },
 
     hinglish: {
@@ -137,7 +137,7 @@ const API_URL = "https://care-os-s7sr.vercel.app/chat";
         "Namaste! 👋 Main CareOS AI Assistant hoon. Main aapko healthcare information aur guidance mein help kar sakta hoon.",
 
       serverError:
-        "⚠️ Server se connection nahi ho pa raha hai. Please make sure CareOS backend is running on port 5000.",
+        "⚠️ Server se connection nahi ho pa raha hai. Please try again.",
     },
 
     english: {
@@ -195,7 +195,7 @@ const API_URL = "https://care-os-s7sr.vercel.app/chat";
         "Hello! 👋 I'm your CareOS AI Assistant. I can help you with healthcare information and general guidance.",
 
       serverError:
-        "⚠️ Unable to connect to the server. Please make sure CareOS backend is running on port 5000.",
+        "⚠️ Unable to connect to the server. Please try again.",
     },
   };
 
@@ -416,15 +416,15 @@ ${text}`,
 
   const handleOpenChat = () => {
     setMessages([
-        {
-            sender: "bot",
-            text: current.welcomeBot,
-        },
+      {
+        sender: "bot",
+        text: current.welcomeBot,
+      },
     ]);
 
     setInput("");
     setLoading(false);
-    setOpen(true);  
+    setOpen(true);
   };
 
   /* =========================================================
@@ -518,6 +518,7 @@ ${text}`,
 
       {!open && (
         <div className="fixed bottom-5 right-5 z-[100] flex flex-col items-end">
+
           {/* Help bubble */}
 
           <div
@@ -626,6 +627,7 @@ ${text}`,
             animation: "careosChatOpen 0.35s ease-out",
           }}
         >
+
           {/* =================================================
               HEADER
           ================================================= */}
@@ -643,7 +645,9 @@ ${text}`,
               pb-3
             "
           >
+
             <div className="flex items-center gap-3">
+
               {/* Small robot */}
 
               <div
@@ -736,6 +740,7 @@ ${text}`,
                 border-[#E1EAF8]
               "
             >
+
               {/* Hindi */}
 
               <button
@@ -806,8 +811,11 @@ ${text}`,
           ================================================= */}
 
           <div className="flex-1 overflow-y-auto bg-white">
+
             {messages.length <= 1 ? (
+
               <div className="p-5">
+
                 {/* Big robot */}
 
                 <div className="flex justify-center mb-1">
@@ -827,6 +835,7 @@ ${text}`,
                 {/* Greeting */}
 
                 <div className="text-center">
+
                   <div className="text-[26px] font-bold text-[#102A56]">
                     {current.greeting}
                   </div>
@@ -849,7 +858,9 @@ ${text}`,
                 ================================================= */}
 
                 <div className="mt-5 space-y-2.5">
+
                   {helpOptions.map((option, index) => (
+
                     <button
                       key={index}
                       onClick={() => handleSend(option.question)}
@@ -865,7 +876,9 @@ ${text}`,
                         transition-all
                       "
                     >
+
                       <div className="flex items-center gap-3">
+
                         <div
                           className="
                             w-10
@@ -883,6 +896,7 @@ ${text}`,
                         </div>
 
                         <div>
+
                           <div className="font-semibold text-[#1554B8] text-sm">
                             {option.title}
                           </div>
@@ -890,6 +904,7 @@ ${text}`,
                           <div className="text-xs text-[#71809A] mt-0.5">
                             {option.description}
                           </div>
+
                         </div>
                       </div>
                     </button>
@@ -901,12 +916,15 @@ ${text}`,
                 ================================================= */}
 
                 <div className="mt-5">
+
                   <div className="text-xs font-semibold text-[#66758D] mb-2">
                     {current.tryAsking}
                   </div>
 
                   <div className="space-y-2">
+
                     {quickQuestions.map((item, index) => (
+
                       <button
                         key={index}
                         onClick={() => handleSend(item.text)}
@@ -933,13 +951,17 @@ ${text}`,
                   </div>
                 </div>
               </div>
+
             ) : (
+
               /* =================================================
                  NORMAL CHAT
               ================================================= */
 
               <div className="p-4 space-y-3">
+
                 {messages.map((msg, i) => (
+
                   <div
                     key={i}
                     className={`flex ${
@@ -948,9 +970,11 @@ ${text}`,
                         : "justify-start"
                     }`}
                   >
+
                     {/* Bot robot */}
 
                     {msg.sender === "bot" && (
+
                       <div
                         className="
                           w-8
@@ -1001,7 +1025,9 @@ ${text}`,
                 {/* Loading */}
 
                 {loading && (
+
                   <div className="flex items-center gap-2">
+
                     <div
                       className="
                         w-8
@@ -1035,6 +1061,7 @@ ${text}`,
                     >
                       {current.typing}
                     </div>
+
                   </div>
                 )}
               </div>
@@ -1054,6 +1081,7 @@ ${text}`,
               border-[#EEF2F8]
             "
           >
+
             <p
               className="
                 text-[9px]
@@ -1064,6 +1092,7 @@ ${text}`,
             >
               {current.disclaimer}
             </p>
+
           </div>
 
           {/* =================================================
@@ -1078,12 +1107,15 @@ ${text}`,
               border-[#E5ECF7]
             "
           >
+
             <div className="flex gap-2">
+
               <input
                 value={input}
                 disabled={loading}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={(e) => {
+
                   if (
                     e.key === "Enter" &&
                     !e.shiftKey
@@ -1091,6 +1123,7 @@ ${text}`,
                     e.preventDefault();
                     handleSend();
                   }
+
                 }}
                 placeholder={current.placeholder}
                 className="
@@ -1131,6 +1164,7 @@ ${text}`,
               >
                 {loading ? "..." : current.send}
               </button>
+
             </div>
           </div>
         </div>

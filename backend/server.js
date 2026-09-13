@@ -8,7 +8,13 @@ import callRoutes from "./routes/callRoutes.js";
 import elevenLabsRoutes from "./routes/elevenLabsRoutes.js";
 
 dotenv.config();
-await connectDB();
+connectDB()
+  .then(() => {
+    console.log("✅ MongoDB Connected Successfully");
+  })
+  .catch((error) => {
+    console.error("❌ MongoDB Connection Failed:", error);
+  });
 
 const app = express();
 
@@ -131,10 +137,5 @@ const PORT = process.env.PORT || 5000;
   app.listen(PORT, "0.0.0.0", () => {
     console.log(`🚀 CareOS Backend running on http://localhost:${PORT}`);
   });
-
-
-/* ================================
-   VERCEL
-================================ */
 
 export default app;
