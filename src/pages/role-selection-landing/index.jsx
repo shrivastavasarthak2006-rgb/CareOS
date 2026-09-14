@@ -620,16 +620,19 @@ const RoleSelectionLanding = () => {
                         <div className="w-11 h-11 rounded-full bg-[#EEF4FF] flex items-center justify-center">
                           <Users size={22} className="text-[#3675EE]" />
                         </div>
+
                         <div>
                           <div className="font-bold text-[#102A56]">
                             New User
                           </div>
+
                           <div className="text-sm text-[#70819E] mt-1">
                             First time using CareOS? Register with Aadhaar.
                           </div>
                         </div>
                       </div>
                     </button>
+
 
                     <button
                       type="button"
@@ -643,10 +646,12 @@ const RoleSelectionLanding = () => {
                         <div className="w-11 h-11 rounded-full bg-[#F3EEFF] flex items-center justify-center">
                           <LockKeyhole size={22} className="text-[#7A45E8]" />
                         </div>
+
                         <div>
                           <div className="font-bold text-[#102A56]">
                             Existing User
                           </div>
+
                           <div className="text-sm text-[#70819E] mt-1">
                             Already have a CareOS account? Login with User ID.
                           </div>
@@ -660,9 +665,12 @@ const RoleSelectionLanding = () => {
                   </div>
                 )}
 
+
                 {/* NEW USER: AADHAAR + OTP */}
+
                 {patientAuthMode === "new" && (
                   <form onSubmit={otpSent ? handleVerifyOtp : handleSendOtp}>
+
                     <button
                       type="button"
                       onClick={() => {
@@ -763,9 +771,12 @@ const RoleSelectionLanding = () => {
                   </form>
                 )}
 
+
                 {/* EXISTING USER: USER ID + PASSWORD */}
+
                 {patientAuthMode === "existing" && (
                   <form onSubmit={handlePatientExistingLogin}>
+
                     <button
                       type="button"
                       onClick={() => {
@@ -813,12 +824,15 @@ const RoleSelectionLanding = () => {
                     >
                       Login
                     </button>
+
                   </form>
                 )}
               </div>
             ) : (
               /* EXISTING LOGIN FLOW FOR DOCTOR / NURSE / ADMIN */
+
               <form onSubmit={handleLogin}>
+
                 <label className="block text-sm font-semibold text-[#30486D] mb-2">
                   Username
                 </label>
@@ -844,7 +858,9 @@ const RoleSelectionLanding = () => {
                 />
 
                 {error && (
-                  <p className="text-red-500 text-sm mt-3">{error}</p>
+                  <p className="text-red-500 text-sm mt-3">
+                    {error}
+                  </p>
                 )}
 
                 <button
@@ -853,6 +869,35 @@ const RoleSelectionLanding = () => {
                 >
                   Login
                 </button>
+
+
+                {/* =================================================
+                    DEMO CREDENTIALS
+                    ONLY FOR DOCTOR / NURSE / RECEPTION ADMIN
+                ================================================== */}
+
+                <div className="mt-4 text-center">
+
+                  <p className="text-xs text-[#70819E]">
+                    Credentials:
+                  </p>
+
+                  <p className="text-xs text-[#70819E] mt-1">
+                    User ID:{" "}
+                    <span className="font-semibold text-[#102A56]">
+                      admin
+                    </span>
+
+                    {"  |  "}
+
+                    Password:{" "}
+                    <span className="font-semibold text-[#102A56]">
+                      1234
+                    </span>
+                  </p>
+
+                </div>
+
               </form>
             )}
 

@@ -11,8 +11,12 @@ const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,
 });
 
+// ================================
+// SEVERITY DETECTION
+// ================================
+
 const detectSeverity = (value = "") => {
-  const text = value.toLowerCase();
+  const text = String(value).toLowerCase();
 
   if (
     text.includes("critical") ||
@@ -33,8 +37,16 @@ const detectSeverity = (value = "") => {
   return "Moderate";
 };
 
+// ================================
+// YES / NO DETECTION
+// ================================
+
 const detectYes = (value = "") => {
-  const text = value.toLowerCase().trim();
+  if (typeof value === "boolean") {
+    return value;
+  }
+
+  const text = String(value).toLowerCase().trim();
 
   return (
     text === "yes" ||
@@ -43,21 +55,39 @@ const detectYes = (value = "") => {
   );
 };
 
+// ================================
+// AI SUMMARY
+// ================================
+
 const generateAISummary = async (data) => {
   try {
     const prompt = `
-Create a very short medical reception summary from the following patient call information.
+You are generating a patient intake summary for CareOS hospital staff.
 
-Patient:
+Create a COMPLETE and CLEAR summary using ALL the patient information provided below.
+
+Do NOT ignore available fields.
+Do NOT invent information.
+If a field is empty, missing, or "Not provided", do not mention it.
+Keep the summary structured and easy for a doctor or reception staff to scan.
+
+========================
+BASIC PATIENT INFORMATION
+========================
+
 Name: ${data.name}
 Age: ${data.age}
-Problem: ${data.problem}
+Phone Number: ${data.phoneNumber}
+Main Problem: ${data.problem}
 Duration: ${data.duration}
 Severity: ${data.severity}
-Previous consultation: ${data.previousConsultation}
-Medical records available: ${data.hasMedicalRecords}
+Previous Consultation: ${data.previousConsultation}
+Medical Records Available: ${data.hasMedicalRecords}
 
-Ayurvedic intake:
+========================
+DASHAVIDHA PARIKSHA
+========================
+
 Prakriti: ${data.prakriti}
 Vikriti: ${data.vikriti}
 Sara: ${data.sara}
@@ -69,16 +99,49 @@ Ahara Shakti: ${data.aharaShakti}
 Vaya: ${data.vaya}
 Bala: ${data.bala}
 
+========================
+AHARA - DIET
+========================
+
 Ahara: ${data.ahara}
+
+========================
+VIHARA - LIFESTYLE
+========================
+
 Vihara: ${data.vihara}
 
-Requirements:
-- Maximum 2 short sentences.
-- Mention the main complaint and important intake details.
-- Include Ayurvedic/lifestyle information only if relevant and available.
-- Do not diagnose.
-- Do not give treatment advice.
-- This summary is for hospital reception/doctor review.
+========================
+SUMMARY REQUIREMENTS
+========================
+
+1. Include ALL available information from the above sections.
+2. Do not diagnose the patient.
+3. Do not recommend medicines or treatment.
+4. Do not make assumptions.
+5. Do not change the patient's reported information.
+6. Keep the wording simple and professional.
+7. Use clear section labels.
+8. The summary can be multiple sentences.
+9. Do not unnecessarily repeat the same information.
+10. This summary is for reception and doctor review.
+
+Format the response like this:
+
+Patient Overview:
+[complete basic patient information]
+
+Health Concern:
+[problem, duration, severity, previous consultation, medical records]
+
+Dashavidha Pariksha:
+[include every available Dashavidha field]
+
+Ahara:
+[available diet information]
+
+Vihara:
+[available lifestyle information]
 `;
 
     const response = await ai.models.generateContent({
@@ -90,12 +153,54 @@ Requirements:
       response.text?.trim() ||
       `${data.name} reported ${data.problem}.`
     );
+
   } catch (error) {
     console.error("❌ Gemini Summary Error:", error);
 
-    return `${data.name} reported ${data.problem}.`;
+    // Fallback summary containing ALL available information
+    return `
+Patient Overview:
+Name: ${data.name}
+Age: ${data.age}
+Phone Number: ${data.phoneNumber}
+
+Health Concern:
+Problem: ${data.problem}
+Duration: ${data.duration || "Not provided"}
+Severity: ${data.severity}
+Previous Consultation: ${
+      data.previousConsultation ? "Yes" : "No"
+    }
+Medical Records: ${
+      data.hasMedicalRecords ? "Available" : "Not available"
+    }
+
+Dashavidha Pariksha:
+Prakriti: ${data.prakriti || "Not provided"}
+Vikriti: ${data.vikriti || "Not provided"}
+Sara: ${data.sara || "Not provided"}
+Samhanana: ${data.samhanana || "Not provided"}
+Pramana: ${data.pramana || "Not provided"}
+Satmya: ${data.satmya || "Not provided"}
+Satva: ${data.satva || "Not provided"}
+Ahara Shakti: ${
+      data.aharaShakti || "Not provided"
+    }
+Vaya: ${data.vaya || "Not provided"}
+Bala: ${data.bala || "Not provided"}
+
+Ahara:
+${data.ahara || "Not provided"}
+
+Vihara:
+${data.vihara || "Not provided"}
+`.trim();
   }
 };
+
+// ================================
+// TEST ROUTE
+// ================================
 
 router.get("/test", (req, res) => {
   console.log("✅ ElevenLabs route is reachable");
@@ -106,7 +211,10 @@ router.get("/test", (req, res) => {
   });
 });
 
-// ElevenLabs webhook
+// ================================
+// ELEVENLABS WEBHOOK
+// ================================
+
 router.post("/patient", async (req, res) => {
   try {
     console.log("📞 ElevenLabs webhook received:");
@@ -140,12 +248,20 @@ router.post("/patient", async (req, res) => {
       vihara,
     } = req.body;
 
+    // ================================
+    // REQUIRED FIELDS
+    // ================================
+
     if (!name || !problem) {
       return res.status(400).json({
         success: false,
         message: "Name and problem are required",
       });
     }
+
+    // ================================
+    // PATIENT DATA
+    // ================================
 
     const patientData = {
       name: String(name).trim(),
@@ -156,8 +272,9 @@ router.post("/patient", async (req, res) => {
           10
         ) || 0,
 
-      phoneNumber:
-        phoneNumber || "Not available",
+      phoneNumber: phoneNumber
+        ? String(phoneNumber).trim()
+        : "Not available",
 
       problem: String(problem).trim(),
 
@@ -173,84 +290,81 @@ router.post("/patient", async (req, res) => {
       hasMedicalRecords:
         detectYes(hasMedicalRecords),
 
-      callSessionId:
-        callSessionId || "",
+      callSessionId: callSessionId
+        ? String(callSessionId).trim()
+        : "",
 
       // ================================
-      // Dashavidha Pariksha
+      // DASHAVIDHA PARIKSHA
       // ================================
 
-      prakriti:
-        prakriti
-          ? String(prakriti).trim()
-          : "",
+      prakriti: prakriti
+        ? String(prakriti).trim()
+        : "",
 
-      vikriti:
-        vikriti
-          ? String(vikriti).trim()
-          : "",
+      vikriti: vikriti
+        ? String(vikriti).trim()
+        : "",
 
-      sara:
-        sara
-          ? String(sara).trim()
-          : "",
+      sara: sara
+        ? String(sara).trim()
+        : "",
 
-      samhanana:
-        samhanana
-          ? String(samhanana).trim()
-          : "",
+      samhanana: samhanana
+        ? String(samhanana).trim()
+        : "",
 
-      pramana:
-        pramana
-          ? String(pramana).trim()
-          : "",
+      pramana: pramana
+        ? String(pramana).trim()
+        : "",
 
-      satmya:
-        satmya
-          ? String(satmya).trim()
-          : "",
+      satmya: satmya
+        ? String(satmya).trim()
+        : "",
 
-      satva:
-        satva
-          ? String(satva).trim()
-          : "",
+      satva: satva
+        ? String(satva).trim()
+        : "",
 
-      aharaShakti:
-        aharaShakti
-          ? String(aharaShakti).trim()
-          : "",
+      aharaShakti: aharaShakti
+        ? String(aharaShakti).trim()
+        : "",
 
-      vaya:
-        vaya
-          ? String(vaya).trim()
-          : "",
+      vaya: vaya
+        ? String(vaya).trim()
+        : "",
 
-      bala:
-        bala
-          ? String(bala).trim()
-          : "",
+      bala: bala
+        ? String(bala).trim()
+        : "",
 
       // ================================
-      // Ahara - Vihara
+      // AHARA - VIHARA
       // ================================
 
-      ahara:
-        ahara
-          ? String(ahara).trim()
-          : "",
+      ahara: ahara
+        ? String(ahara).trim()
+        : "",
 
-      vihara:
-        vihara
-          ? String(vihara).trim()
-          : "",
+      vihara: vihara
+        ? String(vihara).trim()
+        : "",
 
       status: "reception_pending",
     };
 
-    // Generate Gemini summary
-    const aiSummary = await generateAISummary(patientData);
+    // ================================
+    // GENERATE COMPLETE AI SUMMARY
+    // ================================
 
-    // Save to MongoDB
+    const aiSummary = await generateAISummary(
+      patientData
+    );
+
+    // ================================
+    // SAVE TO MONGODB
+    // ================================
+
     const patient = await Patient.create({
       ...patientData,
       aiSummary,
@@ -260,6 +374,10 @@ router.post("/patient", async (req, res) => {
       "✅ Patient saved to MongoDB:",
       patient._id
     );
+
+    // ================================
+    // RESPONSE
+    // ================================
 
     return res.status(201).json({
       success: true,

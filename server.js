@@ -6,84 +6,127 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 dotenv.config();
 
 const app = express();
+
 app.use(cors());
 app.use(express.json());
 
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
-// API KEY CHECK
+// =====================================================
+// GEMINI API KEY
+// =====================================================
+
 if (!process.env.GEMINI_API_KEY) {
-  console.log("❌ API KEY MISSING");
+  console.log("❌ GEMINI_API_KEY MISSING");
   process.exit(1);
 }
 
-// Gemini setup - Using stable model
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-let model;
-try {
-  model = genAI.getGenerativeModel({ model: "gemini-pro" });
-  console.log("✅ Gemini model 'gemini-pro' loaded");
-} catch (e) {
-  console.log("❌ gemini-pro failed, trying gemini-1.5-flash");
-  model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-}
 
-// ✅ HEALTH CHECK
+// Use Gemini model
+const model = genAI.getGenerativeModel({
+  model: "gemini-1.5-flash",
+});
+
+console.log("✅ Gemini initialized");
+
+// =====================================================
+// HEALTH CHECK
+// =====================================================
+
 app.get("/", (req, res) => {
-  res.json({ 
-    status: "OK", 
+  res.json({
+    status: "OK",
+    service: "CareOS Chatbot",
     timestamp: new Date().toISOString(),
-    model: model ? model.name.split('/').pop() : 'unknown'
   });
 });
 
-// ✅ CHAT ROUTE - Simple & Robust
+// =====================================================
+// CHAT
+// =====================================================
+
 app.post("/chat", async (req, res) => {
   try {
     const userMessage = req.body.message?.trim();
 
     if (!userMessage) {
-      return res.status(400).json({ reply: "Please enter a message" });
+      return res.status(400).json({
+        reply: "Please enter a message.",
+      });
     }
 
-    console.log("🤖 Chat request:", userMessage.substring(0, 50) + "...");
+    console.log("🤖 Chat request:", userMessage);
 
-    // Medical context for CareOS
-    const prompt = `You are CareOS Medical Assistant for healthcare professionals and patients.
+    const language = req.body.language || "hinglish";
 
-Medical guidelines:
-- Use appropriate medical terminology 
-- Base responses on evidence-based medicine
-- ALWAYS advise: "Consult your doctor for diagnosis/treatment"
-- Current date: ${new Date().toLocaleDateString()}
+    let languageInstruction = "";
 
-Query: ${userMessage}`;
+    if (language === "hindi") {
+      languageInstruction =
+        "Respond in simple Hindi using Devanagari script.";
+    } else if (language === "english") {
+      languageInstruction =
+        "Respond in clear and simple English.";
+    } else {
+      languageInstruction =
+        "Respond in natural Hinglish using Roman Hindi mixed with simple English. Do not use Devanagari.";
+    }
+
+    const prompt = `
+You are CareOS AI Assistant, an AI healthcare assistant.
+
+You help patients and healthcare users with:
+- General health information
+- Symptoms
+- Medical reports
+- Tests
+- Medicines
+- Treatment information
+- Appointment guidance
+
+IMPORTANT:
+- Give general healthcare information only.
+- Do not claim to diagnose the patient.
+- Do not prescribe medicines or give exact treatment without a doctor.
+- Encourage the user to consult a qualified medical professional when appropriate.
+- If the situation sounds like an emergency, advise immediate medical attention.
+- Keep answers simple, useful and conversational.
+
+LANGUAGE:
+${languageInstruction}
+
+USER QUESTION:
+${userMessage}
+`;
 
     const result = await model.generateContent(prompt);
 
-    let reply = result.response.text();
-    
-    // Clean markdown bold/italics
-    reply = reply.replace(/\*\*(.*?)\*\*/g, '$1').replace(/\*(.*?)\*/g, '$1');
-    
+    const reply =
+      result?.response?.text()?.trim() ||
+      "Sorry, I could not generate a response.";
+
     console.log("✅ AI response sent");
 
-    res.json({ reply: reply.trim() || "Medical assistant ready to help!" });
+    return res.json({
+      reply,
+      exit: false,
+    });
 
   } catch (error) {
-    console.error("🔥 CHAT ERROR:", error.message);
-    
-    // Fallback responses
-    if (error.message.includes('404') || error.message.includes('model')) {
-      res.json({ reply: "Model temporarily unavailable. Try again or contact support." });
-    } else {
-      res.status(500).json({ reply: "Service temporarily unavailable. Please try again." });
-    }
+    console.error("🔥 CHAT ERROR:", error);
+
+    return res.status(500).json({
+      reply:
+        "⚠️ CareOS AI is temporarily unavailable. Please try again.",
+    });
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 CareOS Backend + Gemini Medical AI running on http://localhost:${PORT}`);
-  console.log(`📱 Test chat: curl -X POST http://localhost:${PORT}/chat -H "Content-Type: application/json" -d '{"message":"hello"}'`);
-});
+// =====================================================
+// START SERVER
+// =====================================================
 
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`🚀 CareOS Chatbot running on port ${PORT}`);
+});

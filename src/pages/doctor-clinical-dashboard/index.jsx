@@ -14,6 +14,12 @@ import TreatmentTimeline from './components/TreatmentTimeline';
 import Button from '../../components/ui/Button';
 
 // =========================
+// API
+// =========================
+
+const API_URL = "https://careos-gtd7.onrender.com/api/patients";
+
+// =========================
 // DEPARTMENTS
 // =========================
 
@@ -30,37 +36,6 @@ const departments = [
 ];
 
 // =========================
-// DUMMY REFERRED PATIENTS
-// =========================
-
-const dummyReferredPatients = [
-  {
-    _id: 'dummy-1',
-    name: 'Priya Sharma',
-    age: 25,
-    phoneNumber: '9876543210',
-    problem: 'Shoulder Pain',
-    duration: '1 week',
-    severity: 'Moderate',
-    department: 'Orthopedics',
-    aiSummary:
-      'Patient reports moderate shoulder pain for one week. Previous consultation was done.',
-  },
-  {
-    _id: 'dummy-2',
-    name: 'Rudra Verma',
-    age: 21,
-    phoneNumber: '9876543211',
-    problem: 'Vomiting',
-    duration: '2 days',
-    severity: 'Moderate',
-    department: 'General Medicine',
-    aiSummary:
-      'Patient reports vomiting for two days with no previous consultation.',
-  },
-];
-
-// =========================
 // DOCTOR DASHBOARD
 // =========================
 
@@ -71,13 +46,55 @@ const DoctorClinicalDashboard = () => {
   const [privacyMode, setPrivacyMode] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('connected');
 
-  // Dummy department selection
-  const [doctorDepartment, setDoctorDepartment] = useState({});
+  // =========================
+  // RECEPTION PATIENTS
+  // =========================
 
-  // Dummy referred patients
-  const [referredPatients, setReferredPatients] = useState(
-    dummyReferredPatients
-  );
+  const [doctorDepartment, setDoctorDepartment] = useState({});
+  const [referredPatients, setReferredPatients] = useState([]);
+  const [loadingReferredPatients, setLoadingReferredPatients] =
+    useState(true);
+
+  // =========================
+  // FETCH PATIENTS FROM RECEPTION
+  // =========================
+
+  const fetchReferredPatients = async () => {
+    try {
+      const response = await fetch(API_URL);
+      const data = await response.json();
+
+      if (data.success) {
+        const proceededPatients = data.patients.filter(
+          (patient) =>
+            patient.status === 'proceeded_to_doctor'
+        );
+
+        setReferredPatients(proceededPatients);
+      }
+    } catch (error) {
+      console.error(
+        'Failed to fetch referred patients:',
+        error
+      );
+
+      setConnectionStatus('reconnecting');
+    } finally {
+      setLoadingReferredPatients(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchReferredPatients();
+
+    // Automatically check for new patients every 5 seconds
+    const interval = setInterval(
+      fetchReferredPatients,
+      5000
+    );
+
+    return () => clearInterval(interval);
+  }, []);
 
   // =========================
   // MOCK KPI DATA
@@ -386,7 +403,9 @@ const DoctorClinicalDashboard = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setConnectionStatus((prev) =>
-        prev === 'connected' ? 'reconnecting' : 'connected'
+        prev === 'connected'
+          ? 'reconnecting'
+          : 'connected'
       );
     }, 30000);
 
@@ -416,7 +435,7 @@ const DoctorClinicalDashboard = () => {
   };
 
   // =========================
-  // DUMMY REFER TO DEPARTMENT
+  // REFER TO DEPARTMENT
   // =========================
 
   const referToDepartment = (patientId) => {
@@ -439,10 +458,12 @@ const DoctorClinicalDashboard = () => {
       )
     );
 
+    const patient = referredPatients.find(
+      (patient) => patient._id === patientId
+    );
+
     alert(
-      `${dummyReferredPatients.find(
-        (patient) => patient._id === patientId
-      )?.name} referred to ${department}`
+      `${patient?.name || 'Patient'} referred to ${department}`
     );
   };
 
@@ -452,7 +473,9 @@ const DoctorClinicalDashboard = () => {
       <RoleNavigationHeader
         currentRole="doctor"
         privacyMode={privacyMode}
-        onPrivacyToggle={() => setPrivacyMode(!privacyMode)}
+        onPrivacyToggle={() =>
+          setPrivacyMode(!privacyMode)
+        }
       />
 
       <div className="pt-[60px]">
@@ -557,20 +580,45 @@ const DoctorClinicalDashboard = () => {
               PATIENTS REFERRED BY RECEPTION
           ========================================= */}
 
-          {referredPatients.length > 0 && (
-            <div className="mb-6 md:mb-8 rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="mb-6 md:mb-8 rounded-2xl border border-slate-200 bg-white shadow-sm">
 
-              <div className="border-b border-slate-200 px-6 py-5">
+            <div className="border-b border-slate-200 px-6 py-5">
 
-                <h2 className="text-lg font-semibold text-foreground">
-                  Patients Referred by Reception
-                </h2>
+              <h2 className="text-lg font-semibold text-foreground">
+                Patients Referred by Reception
+              </h2>
 
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Review patients and refer them to the appropriate department
+              <p className="mt-1 text-sm text-muted-foreground">
+                Patients who have been proceeded to the doctor by reception
+              </p>
+
+            </div>
+
+            {loadingReferredPatients ? (
+
+              <div className="px-6 py-12 text-center text-slate-500">
+                Loading referred patients...
+              </div>
+
+            ) : referredPatients.length === 0 ? (
+
+              <div className="px-6 py-12 text-center">
+
+                <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-2xl">
+                  ✓
+                </div>
+
+                <h3 className="font-semibold text-slate-800">
+                  No patients referred yet
+                </h3>
+
+                <p className="mt-1 text-sm text-slate-500">
+                  Patients proceeded by reception will appear here automatically.
                 </p>
 
               </div>
+
+            ) : (
 
               <div className="divide-y divide-slate-100">
 
@@ -588,7 +636,9 @@ const DoctorClinicalDashboard = () => {
                       <div className="flex items-start gap-4">
 
                         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-lg font-bold text-blue-600">
-                          {patient.name?.charAt(0)?.toUpperCase() || 'P'}
+                          {patient.name
+                            ?.charAt(0)
+                            ?.toUpperCase() || 'P'}
                         </div>
 
                         <div>
@@ -611,17 +661,23 @@ const DoctorClinicalDashboard = () => {
 
                           <div className="mt-3 flex flex-wrap gap-2">
 
-                            <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600">
-                              {patient.problem}
-                            </span>
+                            {patient.problem && (
+                              <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600">
+                                {patient.problem}
+                              </span>
+                            )}
 
-                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
-                              {patient.duration}
-                            </span>
+                            {patient.duration && (
+                              <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                                {patient.duration}
+                              </span>
+                            )}
 
-                            <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-600">
-                              {patient.severity}
-                            </span>
+                            {patient.severity && (
+                              <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-600">
+                                {patient.severity}
+                              </span>
+                            )}
 
                           </div>
 
@@ -674,7 +730,7 @@ const DoctorClinicalDashboard = () => {
                           Refer to Department →
                         </button>
 
-                        {patient.referred && ( 
+                        {patient.referred && (
                           <div className="mt-3 text-sm font-medium text-green-600">
                             Proceeded to {patient.department}
                           </div>
@@ -728,14 +784,43 @@ const DoctorClinicalDashboard = () => {
                       </div>
                     )}
 
+                    {/* Previous Consultation */}
+
+                    {patient.previousConsultation && (
+                      <div className="mt-4 text-sm text-slate-600">
+
+                        <span className="font-medium text-slate-800">
+                          Previous Consultation:
+                        </span>{' '}
+
+                        {String(patient.previousConsultation)}
+
+                      </div>
+                    )}
+
+                    {/* Medical Records */}
+
+                    <div className="mt-3 text-sm text-slate-600">
+
+                      <span className="font-medium text-slate-800">
+                        Medical Records:
+                      </span>{' '}
+
+                      {patient.hasMedicalRecords
+                        ? 'Available'
+                        : 'Not Available'}
+
+                    </div>
+
                   </div>
 
                 ))}
 
               </div>
 
-            </div>
-          )}
+            )}
+
+          </div>
 
           {/* KPI Cards */}
 
@@ -802,7 +887,9 @@ const DoctorClinicalDashboard = () => {
           </div>
 
         </main>
+
       </div>
+
     </div>
   );
 };
