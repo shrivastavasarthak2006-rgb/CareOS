@@ -255,13 +255,8 @@ const CareOSChatbot = () => {
         },
 
         body: JSON.stringify({
-          message: `${languagePrompt}
-
-User's question:
-${text}`,
-
+          message: text,
           conversation: conversation,
-
           language: language,
         }),
       });

@@ -7,9 +7,14 @@ dotenv.config();
 
 const app = express();
 
+// =====================================================
+// MIDDLEWARE
+// =====================================================
+
 app.use(cors());
 app.use(express.json());
 
+// Render provides PORT automatically
 const PORT = process.env.PORT || 3000;
 
 // =====================================================
@@ -21,11 +26,12 @@ if (!process.env.GEMINI_API_KEY) {
   process.exit(1);
 }
 
+// Initialize Gemini
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
-// Use Gemini model
+// Gemini model
 const model = genAI.getGenerativeModel({
-  model: "gemini-1.5-flash",
+  model: "gemini-3.6-flash",
 });
 
 console.log("✅ Gemini initialized");
@@ -40,6 +46,34 @@ app.get("/", (req, res) => {
     service: "CareOS Chatbot",
     timestamp: new Date().toISOString(),
   });
+});
+
+// =====================================================
+// GEMINI TEST
+// =====================================================
+
+app.get("/gemini-test", async (req, res) => {
+  try {
+    console.log("🔥 GEMINI TEST ROUTE HIT");
+
+    const result = await model.generateContent("Reply only: OK");
+
+    const reply = result.response.text();
+
+    console.log("🔥 GEMINI TEST SUCCESS:", reply);
+
+    res.json({
+      success: true,
+      reply: reply,
+    });
+  } catch (error) {
+    console.error("🔥 GEMINI TEST ERROR:", error);
+
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
 });
 
 // =====================================================
@@ -100,6 +134,8 @@ USER QUESTION:
 ${userMessage}
 `;
 
+    console.log("🔥 Sending request to Gemini...");
+
     const result = await model.generateContent(prompt);
 
     const reply =
@@ -112,13 +148,13 @@ ${userMessage}
       reply,
       exit: false,
     });
-
   } catch (error) {
     console.error("🔥 CHAT ERROR:", error);
 
     return res.status(500).json({
       reply:
         "⚠️ CareOS AI is temporarily unavailable. Please try again.",
+      error: error.message,
     });
   }
 });

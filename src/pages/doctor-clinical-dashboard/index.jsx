@@ -71,6 +71,20 @@ const DoctorClinicalDashboard = () => {
         );
 
         setReferredPatients(proceededPatients);
+
+        // Keep saved departments selected after refresh
+        const savedDepartments = {};
+
+        proceededPatients.forEach((patient) => {
+          if (patient.department) {
+            savedDepartments[patient._id] = patient.department;
+          }
+        });
+
+        setDoctorDepartment((current) => ({
+          ...savedDepartments,
+          ...current,
+        }));
       }
     } catch (error) {
       console.error(
@@ -438,7 +452,7 @@ const DoctorClinicalDashboard = () => {
   // REFER TO DEPARTMENT
   // =========================
 
-  const referToDepartment = (patientId) => {
+  const referToDepartment = async (patientId) => {
     const department = doctorDepartment[patientId];
 
     if (!department) {
@@ -446,25 +460,62 @@ const DoctorClinicalDashboard = () => {
       return;
     }
 
-    setReferredPatients((currentPatients) =>
-      currentPatients.map((patient) =>
-        patient._id === patientId
-          ? {
-              ...patient,
-              department: department,
-              referred: true,
-            }
-          : patient
-      )
-    );
+    try {
+      const response = await fetch(
+        `${API_URL}/${patientId}/status`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            status: 'proceeded_to_doctor',
+            department: department,
+          }),
+        }
+      );
 
-    const patient = referredPatients.find(
-      (patient) => patient._id === patientId
-    );
+      const data = await response.json();
 
-    alert(
-      `${patient?.name || 'Patient'} referred to ${department}`
-    );
+      if (!response.ok || !data.success) {
+        throw new Error(
+          data.message || 'Failed to update patient'
+        );
+      }
+
+      // Update frontend using saved backend data
+      setReferredPatients((currentPatients) =>
+        currentPatients.map((patient) =>
+          patient._id === patientId
+            ? {
+                ...patient,
+                status: data.patient.status,
+                department: data.patient.department,
+              }
+            : patient
+        )
+      );
+
+      // Keep department selected after saving
+      setDoctorDepartment((current) => ({
+        ...current,
+        [patientId]: data.patient.department,
+      }));
+
+      alert(
+        `${data.patient.name || 'Patient'} referred to ${department}`
+      );
+
+    } catch (error) {
+      console.error(
+        '❌ Failed to refer patient:',
+        error
+      );
+
+      alert(
+        'Failed to refer patient. Please try again.'
+      );
+    }
   };
 
   return (
@@ -695,7 +746,9 @@ const DoctorClinicalDashboard = () => {
 
                         <select
                           value={
-                            doctorDepartment[patient._id] || ''
+                            doctorDepartment[patient._id] ||
+                            patient.department ||
+                            ''
                           }
                           onChange={(e) =>
                             setDoctorDepartment((current) => ({
@@ -730,7 +783,9 @@ const DoctorClinicalDashboard = () => {
                           Refer to Department →
                         </button>
 
-                        {patient.referred && (
+                        {/* PERMANENT SAVED STATUS */}
+
+                        {patient.department && (
                           <div className="mt-3 text-sm font-medium text-green-600">
                             Proceeded to {patient.department}
                           </div>
