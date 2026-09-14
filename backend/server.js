@@ -63,7 +63,7 @@ const ai = new GoogleGenAI({
 console.log("✅ Gemini AI initialized");
 
 console.log("🔥 PRIMARY MODEL: gemini-3.6-flash");
-console.log("🛟 FALLBACK MODEL: gemini-3.6-flash-lite");
+console.log("🛟 FALLBACK MODEL: gemini-2.5-flash-lite");
 
 // =====================================================
 // GEMINI FALLBACK FUNCTION
@@ -103,7 +103,7 @@ async function generateWithFallback(prompt) {
 
         const fallbackResponse =
           await ai.models.generateContent({
-            model: "gemini-3.6-flash-lite",
+            model: "gemini-2.5-flash-lite",
             contents: prompt,
           });
 
