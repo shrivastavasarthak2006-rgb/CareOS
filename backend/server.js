@@ -6,6 +6,7 @@ import connectDB from "./config/db.js";
 import patientRoutes from "./routes/patientRoutes.js";
 import callRoutes from "./routes/callRoutes.js";
 import elevenLabsRoutes from "./routes/elevenLabsRoutes.js";
+console.log("🔥🔥🔥 NEW CAREOS SERVER CODE LOADED 🔥🔥🔥");
 
 dotenv.config();
 connectDB()
@@ -46,6 +47,7 @@ const ai = new GoogleGenAI({
 });
 
 console.log("✅ Gemini AI initialized");
+console.log("🔥🔥🔥 CAREOS SERVER VERSION: GEMINI 3.6 🔥🔥🔥");
 
 /* ================================
    HEALTH CHECK
@@ -62,6 +64,30 @@ app.get("/", (req, res) => {
 /* ================================
    CHAT API
 ================================ */
+app.post("/chat-test", async (req, res) => {
+  try {
+    console.log("🔥 CHAT TEST ROUTE HIT");
+
+    const response = await ai.models.generateContent({
+      model: "gemini-3.6-flash",
+      contents: "Reply only: CareOS chatbot is working.",
+    });
+
+    console.log("🔥 GEMINI 3.6 TEST SUCCESS");
+
+    return res.json({
+      success: true,
+      reply: response.text,
+    });
+  } catch (error) {
+    console.error("🔥 GEMINI 3.6 TEST ERROR:", error);
+
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
 
 app.post("/chat", async (req, res) => {
   try {
@@ -106,7 +132,7 @@ ${userMessage}
 `;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3.6-flash",
       contents: prompt,
     });
 
