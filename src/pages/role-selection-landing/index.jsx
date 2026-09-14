@@ -474,10 +474,7 @@ const RoleSelectionLanding = () => {
                 <RoleNode
                   key={role.id}
                   role={role}
-                  onClick={() => 
-                    role.id==="admin"
-                    ? navigate("/reception-dashboard")
-                    : openLogin(role)}
+                  onClick={() => openLogin(role)}
                 />
               ))}
 

@@ -72,15 +72,26 @@ router.get("/:id", async (req, res) => {
   }
 });
 
-// Update patient status
+// Update patient status and department
 router.patch("/:id/status", async (req, res) => {
   try {
-    const { status } = req.body;
+    const { status, department } = req.body;
+
+    const updateData = {
+      status,
+    };
+
+    if (department) {
+      updateData.department = department;
+    }
 
     const patient = await Patient.findByIdAndUpdate(
       req.params.id,
-      { status },
-      { new: true }
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      }
     );
 
     if (!patient) {
@@ -92,7 +103,7 @@ router.patch("/:id/status", async (req, res) => {
 
     res.json({
       success: true,
-      message: "Patient status updated",
+      message: "Patient status and department updated",
       patient,
     });
   } catch (error) {

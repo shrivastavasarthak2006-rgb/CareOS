@@ -2,10 +2,23 @@ import React, { useEffect, useState } from "react";
 
 const API_URL = "https://careos-gtd7.onrender.com/api/patients";
 
+const departments = [
+  "General Medicine",
+  "Cardiology",
+  "Orthopedics",
+  "Pediatrics",
+  "Gynecology",
+  "ENT",
+  "Dermatology",
+  "Neurology",
+  "Emergency",
+];
+
 const ReceptionDashboard = () => {
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingId, setUpdatingId] = useState(null);
+  const [selectedDepartment, setSelectedDepartment] = useState({});
 
   const fetchPatients = async () => {
     try {
@@ -30,7 +43,14 @@ const ReceptionDashboard = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const proceedToDoctor = async (patientId) => {
+  const proceedToDepartment = async (patientId) => {
+    const department = selectedDepartment[patientId];
+
+    if (!department) {
+      alert("Please select a department first.");
+      return;
+    }
+
     try {
       setUpdatingId(patientId);
 
@@ -43,6 +63,7 @@ const ReceptionDashboard = () => {
           },
           body: JSON.stringify({
             status: "proceeded_to_doctor",
+            department: department,
           }),
         }
       );
@@ -56,19 +77,22 @@ const ReceptionDashboard = () => {
               ? {
                   ...patient,
                   status: "proceeded_to_doctor",
+                  department: department,
                 }
               : patient
           )
         );
+      } else {
+        alert(data.message || "Failed to update patient.");
       }
     } catch (error) {
       console.error("Failed to proceed patient:", error);
+      alert("Failed to proceed patient.");
     } finally {
       setUpdatingId(null);
     }
   };
 
-  // Show pending + proceeded patients
   const receptionPatients = patients.filter(
     (patient) =>
       patient.status === "reception_pending" ||
@@ -284,29 +308,65 @@ const ReceptionDashboard = () => {
 
                         </div>
 
-                        {/* Proceed Button */}
+                        {/* Department */}
                         {patient.status === "proceeded_to_doctor" ? (
 
-                          <button
-                            disabled
-                            className="rounded-xl bg-emerald-100 px-5 py-2.5 text-sm font-semibold text-emerald-700 cursor-default"
-                          >
-                            ✓ Proceeded
-                          </button>
+                          <div className="flex flex-col items-end gap-2">
+
+                            <span className="rounded-xl bg-emerald-100 px-5 py-2.5 text-sm font-semibold text-emerald-700">
+                              ✓ Proceeded to{" "}
+                              {patient.department || "Department"}
+                            </span>
+
+                          </div>
 
                         ) : (
 
-                          <button
-                            onClick={() =>
-                              proceedToDoctor(patient._id)
-                            }
-                            disabled={updatingId === patient._id}
-                            className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-                          >
-                            {updatingId === patient._id
-                              ? "Proceeding..."
-                              : "Proceed to Doctor →"}
-                          </button>
+                          <div className="flex flex-col gap-2">
+
+                            <select
+                              value={
+                                selectedDepartment[patient._id] || ""
+                              }
+                              onChange={(e) =>
+                                setSelectedDepartment((current) => ({
+                                  ...current,
+                                  [patient._id]: e.target.value,
+                                }))
+                              }
+                              className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                            >
+
+                              <option value="">
+                                Select Department
+                              </option>
+
+                              {departments.map((department) => (
+                                <option
+                                  key={department}
+                                  value={department}
+                                >
+                                  {department}
+                                </option>
+                              ))}
+
+                            </select>
+
+                            <button
+                              onClick={() =>
+                                proceedToDepartment(patient._id)
+                              }
+                              disabled={
+                                updatingId === patient._id
+                              }
+                              className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                            >
+                              {updatingId === patient._id
+                                ? "Proceeding..."
+                                : "Proceed to Department →"}
+                            </button>
+
+                          </div>
 
                         )}
 
@@ -352,6 +412,19 @@ const ReceptionDashboard = () => {
                         </span>{" "}
 
                         {patient.previousConsultation}
+
+                      </div>
+                    )}
+
+                    {/* Selected Department Info */}
+                    {patient.department && (
+                      <div className="text-sm text-slate-600">
+
+                        <span className="font-medium text-slate-800">
+                          Department:
+                        </span>{" "}
+
+                        {patient.department}
 
                       </div>
                     )}

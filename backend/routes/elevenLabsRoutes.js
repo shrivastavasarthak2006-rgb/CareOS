@@ -57,9 +57,25 @@ Severity: ${data.severity}
 Previous consultation: ${data.previousConsultation}
 Medical records available: ${data.hasMedicalRecords}
 
+Ayurvedic intake:
+Prakriti: ${data.prakriti}
+Vikriti: ${data.vikriti}
+Sara: ${data.sara}
+Samhanana: ${data.samhanana}
+Pramana: ${data.pramana}
+Satmya: ${data.satmya}
+Satva: ${data.satva}
+Ahara Shakti: ${data.aharaShakti}
+Vaya: ${data.vaya}
+Bala: ${data.bala}
+
+Ahara: ${data.ahara}
+Vihara: ${data.vihara}
+
 Requirements:
 - Maximum 2 short sentences.
-- Mention the main complaint and important details.
+- Mention the main complaint and important intake details.
+- Include Ayurvedic/lifestyle information only if relevant and available.
 - Do not diagnose.
 - Do not give treatment advice.
 - This summary is for hospital reception/doctor review.
@@ -80,8 +96,10 @@ Requirements:
     return `${data.name} reported ${data.problem}.`;
   }
 };
+
 router.get("/test", (req, res) => {
   console.log("✅ ElevenLabs route is reachable");
+
   res.json({
     success: true,
     message: "ElevenLabs route is working",
@@ -104,6 +122,22 @@ router.post("/patient", async (req, res) => {
       hasMedicalRecords,
       phoneNumber,
       callSessionId,
+
+      // Dashavidha Pariksha
+      prakriti,
+      vikriti,
+      sara,
+      samhanana,
+      pramana,
+      satmya,
+      satva,
+      aharaShakti,
+      vaya,
+      bala,
+
+      // Ahara - Vihara
+      ahara,
+      vihara,
     } = req.body;
 
     if (!name || !problem) {
@@ -115,11 +149,15 @@ router.post("/patient", async (req, res) => {
 
     const patientData = {
       name: String(name).trim(),
-      age: Number.parseInt(String(age).replace(/\D/g, ""), 10) || 0,
+
+      age:
+        Number.parseInt(
+          String(age).replace(/\D/g, ""),
+          10
+        ) || 0,
 
       phoneNumber:
-        phoneNumber ||
-        "Not available",
+        phoneNumber || "Not available",
 
       problem: String(problem).trim(),
 
@@ -138,6 +176,74 @@ router.post("/patient", async (req, res) => {
       callSessionId:
         callSessionId || "",
 
+      // ================================
+      // Dashavidha Pariksha
+      // ================================
+
+      prakriti:
+        prakriti
+          ? String(prakriti).trim()
+          : "",
+
+      vikriti:
+        vikriti
+          ? String(vikriti).trim()
+          : "",
+
+      sara:
+        sara
+          ? String(sara).trim()
+          : "",
+
+      samhanana:
+        samhanana
+          ? String(samhanana).trim()
+          : "",
+
+      pramana:
+        pramana
+          ? String(pramana).trim()
+          : "",
+
+      satmya:
+        satmya
+          ? String(satmya).trim()
+          : "",
+
+      satva:
+        satva
+          ? String(satva).trim()
+          : "",
+
+      aharaShakti:
+        aharaShakti
+          ? String(aharaShakti).trim()
+          : "",
+
+      vaya:
+        vaya
+          ? String(vaya).trim()
+          : "",
+
+      bala:
+        bala
+          ? String(bala).trim()
+          : "",
+
+      // ================================
+      // Ahara - Vihara
+      // ================================
+
+      ahara:
+        ahara
+          ? String(ahara).trim()
+          : "",
+
+      vihara:
+        vihara
+          ? String(vihara).trim()
+          : "",
+
       status: "reception_pending",
     };
 
@@ -150,7 +256,10 @@ router.post("/patient", async (req, res) => {
       aiSummary,
     });
 
-    console.log("✅ Patient saved to MongoDB:", patient._id);
+    console.log(
+      "✅ Patient saved to MongoDB:",
+      patient._id
+    );
 
     return res.status(201).json({
       success: true,
@@ -160,7 +269,10 @@ router.post("/patient", async (req, res) => {
     });
 
   } catch (error) {
-    console.error("🔥 ElevenLabs Webhook Error:", error);
+    console.error(
+      "🔥 ElevenLabs Webhook Error:",
+      error
+    );
 
     return res.status(500).json({
       success: false,

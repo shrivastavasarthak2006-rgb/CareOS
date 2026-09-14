@@ -2,11 +2,7 @@ import mongoose from "mongoose";
 
 const patientSchema = new mongoose.Schema(
   {
-    name: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    name: { type: String, required: true, trim: true},
 
     age: {
       type: Number,
@@ -18,6 +14,11 @@ const patientSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    department: {
+      type: String,
+      default: "",
+       trim: true,
+      },
 
     problem: {
       type: String,
@@ -45,6 +46,90 @@ const patientSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    // ================================
+    // Dashavidha Pariksha
+    // ================================
+
+    prakriti: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    vikriti: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    sara: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    samhanana: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    pramana: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    satmya: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    satva: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    aharaShakti: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    vaya: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    bala: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    // ================================
+    // Ahara - Vihara
+    // ================================
+
+    ahara: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    vihara: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    // ================================
+    // Documents
+    // ================================
 
     documents: [
       {

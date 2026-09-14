@@ -13,6 +13,57 @@ import ProcedureManagement from './components/ProcedureManagement';
 import TreatmentTimeline from './components/TreatmentTimeline';
 import Button from '../../components/ui/Button';
 
+// =========================
+// DEPARTMENTS
+// =========================
+
+const departments = [
+  'General Medicine',
+  'Cardiology',
+  'Orthopedics',
+  'Pediatrics',
+  'Gynecology',
+  'ENT',
+  'Dermatology',
+  'Neurology',
+  'Emergency',
+];
+
+// =========================
+// DUMMY REFERRED PATIENTS
+// =========================
+
+const dummyReferredPatients = [
+  {
+    _id: 'dummy-1',
+    name: 'Priya Sharma',
+    age: 25,
+    phoneNumber: '9876543210',
+    problem: 'Shoulder Pain',
+    duration: '1 week',
+    severity: 'Moderate',
+    department: 'Orthopedics',
+    aiSummary:
+      'Patient reports moderate shoulder pain for one week. Previous consultation was done.',
+  },
+  {
+    _id: 'dummy-2',
+    name: 'Rudra Verma',
+    age: 21,
+    phoneNumber: '9876543211',
+    problem: 'Vomiting',
+    duration: '2 days',
+    severity: 'Moderate',
+    department: 'General Medicine',
+    aiSummary:
+      'Patient reports vomiting for two days with no previous consultation.',
+  },
+];
+
+// =========================
+// DOCTOR DASHBOARD
+// =========================
+
 const DoctorClinicalDashboard = () => {
   const navigate = useNavigate();
 
@@ -20,9 +71,18 @@ const DoctorClinicalDashboard = () => {
   const [privacyMode, setPrivacyMode] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('connected');
 
+  // Dummy department selection
+  const [doctorDepartment, setDoctorDepartment] = useState({});
+
+  // Dummy referred patients
+  const [referredPatients, setReferredPatients] = useState(
+    dummyReferredPatients
+  );
+
   // =========================
   // MOCK KPI DATA
   // =========================
+
   const mockKPIData = [
     {
       title: 'Active Patients',
@@ -69,6 +129,7 @@ const DoctorClinicalDashboard = () => {
   // =========================
   // MOCK PATIENTS
   // =========================
+
   const mockPatients = [
     {
       id: 'p1',
@@ -150,6 +211,7 @@ const DoctorClinicalDashboard = () => {
   // =========================
   // MOCK VITAL SIGNS
   // =========================
+
   const mockVitalSignsData = [
     {
       time: '00:00',
@@ -219,6 +281,7 @@ const DoctorClinicalDashboard = () => {
   // =========================
   // MOCK MEDICATIONS
   // =========================
+
   const mockMedications = [
     {
       id: 'med1',
@@ -265,6 +328,7 @@ const DoctorClinicalDashboard = () => {
   // =========================
   // MOCK TEAM MEMBERS
   // =========================
+
   const mockTeamMembers = [
     {
       id: 'team1',
@@ -310,6 +374,7 @@ const DoctorClinicalDashboard = () => {
   // =========================
   // SELECTED PATIENT
   // =========================
+
   const selectedPatient = mockPatients.find(
     (patient) => patient.id === selectedPatientId
   );
@@ -317,6 +382,7 @@ const DoctorClinicalDashboard = () => {
   // =========================
   // CONNECTION STATUS
   // =========================
+
   useEffect(() => {
     const interval = setInterval(() => {
       setConnectionStatus((prev) =>
@@ -330,6 +396,7 @@ const DoctorClinicalDashboard = () => {
   // =========================
   // HANDLERS
   // =========================
+
   const handlePatientSelect = (patientId) => {
     setSelectedPatientId(patientId);
   };
@@ -346,6 +413,37 @@ const DoctorClinicalDashboard = () => {
 
   const handleExportReport = () => {
     console.log('Exporting clinical report...');
+  };
+
+  // =========================
+  // DUMMY REFER TO DEPARTMENT
+  // =========================
+
+  const referToDepartment = (patientId) => {
+    const department = doctorDepartment[patientId];
+
+    if (!department) {
+      alert('Please select a department first.');
+      return;
+    }
+
+    setReferredPatients((currentPatients) =>
+      currentPatients.map((patient) =>
+        patient._id === patientId
+          ? {
+              ...patient,
+              department: department,
+              referred: true,
+            }
+          : patient
+      )
+    );
+
+    alert(
+      `${dummyReferredPatients.find(
+        (patient) => patient._id === patientId
+      )?.name} referred to ${department}`
+    );
   };
 
   return (
@@ -373,6 +471,7 @@ const DoctorClinicalDashboard = () => {
         <main className="max-w-[1536px] mx-auto px-4 md:px-6 lg:px-8 py-6 md:py-8 lg:py-10">
 
           {/* Header */}
+
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6 md:mb-8">
 
             <div>
@@ -387,7 +486,6 @@ const DoctorClinicalDashboard = () => {
 
             <div className="flex items-center gap-3 flex-wrap">
 
-              {/* Doctor Name */}
               <div className="flex items-center gap-2 rounded-lg bg-primary/10 px-4 py-2">
 
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-semibold text-white">
@@ -406,7 +504,6 @@ const DoctorClinicalDashboard = () => {
 
               </div>
 
-              {/* Connection Status */}
               <div
                 className={`flex items-center gap-2 px-3 py-2 rounded-lg ${
                   connectionStatus === 'connected'
@@ -414,6 +511,7 @@ const DoctorClinicalDashboard = () => {
                     : 'bg-warning/10 text-warning'
                 }`}
               >
+
                 <div
                   className={`w-2 h-2 rounded-full ${
                     connectionStatus === 'connected'
@@ -427,9 +525,9 @@ const DoctorClinicalDashboard = () => {
                     ? 'Live Data'
                     : 'Reconnecting...'}
                 </span>
+
               </div>
 
-              {/* Export Report */}
               <Button
                 variant="outline"
                 size="default"
@@ -440,7 +538,6 @@ const DoctorClinicalDashboard = () => {
                 Export Report
               </Button>
 
-              {/* View Details */}
               {selectedPatient && (
                 <Button
                   variant="default"
@@ -456,7 +553,192 @@ const DoctorClinicalDashboard = () => {
             </div>
           </div>
 
+          {/* =========================================
+              PATIENTS REFERRED BY RECEPTION
+          ========================================= */}
+
+          {referredPatients.length > 0 && (
+            <div className="mb-6 md:mb-8 rounded-2xl border border-slate-200 bg-white shadow-sm">
+
+              <div className="border-b border-slate-200 px-6 py-5">
+
+                <h2 className="text-lg font-semibold text-foreground">
+                  Patients Referred by Reception
+                </h2>
+
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Review patients and refer them to the appropriate department
+                </p>
+
+              </div>
+
+              <div className="divide-y divide-slate-100">
+
+                {referredPatients.map((patient) => (
+
+                  <div
+                    key={patient._id}
+                    className="p-6 transition hover:bg-slate-50"
+                  >
+
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+
+                      {/* Patient Information */}
+
+                      <div className="flex items-start gap-4">
+
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-blue-100 text-lg font-bold text-blue-600">
+                          {patient.name?.charAt(0)?.toUpperCase() || 'P'}
+                        </div>
+
+                        <div>
+
+                          <h3 className="text-lg font-semibold text-slate-900">
+                            {patient.name}
+                          </h3>
+
+                          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-slate-500">
+
+                            <span>
+                              Age: {patient.age}
+                            </span>
+
+                            <span>
+                              📞 {patient.phoneNumber}
+                            </span>
+
+                          </div>
+
+                          <div className="mt-3 flex flex-wrap gap-2">
+
+                            <span className="rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600">
+                              {patient.problem}
+                            </span>
+
+                            <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600">
+                              {patient.duration}
+                            </span>
+
+                            <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-600">
+                              {patient.severity}
+                            </span>
+
+                          </div>
+
+                        </div>
+
+                      </div>
+
+                      {/* Department */}
+
+                      <div className="flex flex-col gap-2 lg:min-w-[240px]">
+
+                        <label className="text-xs font-medium text-slate-500">
+                          Refer to Department
+                        </label>
+
+                        <select
+                          value={
+                            doctorDepartment[patient._id] || ''
+                          }
+                          onChange={(e) =>
+                            setDoctorDepartment((current) => ({
+                              ...current,
+                              [patient._id]: e.target.value,
+                            }))
+                          }
+                          className="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
+                        >
+
+                          <option value="">
+                            Select Department
+                          </option>
+
+                          {departments.map((department) => (
+                            <option
+                              key={department}
+                              value={department}
+                            >
+                              {department}
+                            </option>
+                          ))}
+
+                        </select>
+
+                        <button
+                          onClick={() =>
+                            referToDepartment(patient._id)
+                          }
+                          className="rounded-xl bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700"
+                        >
+                          Refer to Department →
+                        </button>
+
+                        {patient.referred && ( 
+                          <div className="mt-3 text-sm font-medium text-green-600">
+                            Proceeded to {patient.department}
+                          </div>
+                        )}
+
+                      </div>
+
+                    </div>
+
+                    {/* Current Department */}
+
+                    {patient.department && (
+                      <div className="mt-4">
+
+                        <span className="inline-flex rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-700">
+                          Current Department: {patient.department}
+                        </span>
+
+                      </div>
+                    )}
+
+                    {/* AI Summary */}
+
+                    {patient.aiSummary && (
+                      <div className="mt-5 rounded-2xl border border-blue-100 bg-blue-50/50 p-5">
+
+                        <div className="mb-2 flex items-center gap-2">
+
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
+                            🤖
+                          </div>
+
+                          <div>
+
+                            <h4 className="text-sm font-semibold text-slate-800">
+                              AI Patient Summary
+                            </h4>
+
+                            <p className="text-xs text-slate-500">
+                              Generated from the patient's AI call
+                            </p>
+
+                          </div>
+
+                        </div>
+
+                        <p className="text-sm leading-6 text-slate-700">
+                          {patient.aiSummary}
+                        </p>
+
+                      </div>
+                    )}
+
+                  </div>
+
+                ))}
+
+              </div>
+
+            </div>
+          )}
+
           {/* KPI Cards */}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5 lg:gap-6 mb-6 md:mb-8">
 
             {mockKPIData.map((kpi, index) => (
@@ -469,6 +751,7 @@ const DoctorClinicalDashboard = () => {
           </div>
 
           {/* Patient List + Vital Signs */}
+
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 md:gap-5 lg:gap-6 mb-6 md:mb-8">
 
             <div className="lg:col-span-4">
@@ -493,6 +776,7 @@ const DoctorClinicalDashboard = () => {
           </div>
 
           {/* Medication + Care Team */}
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5 lg:gap-6">
 
             <MedicationComplianceTracker
@@ -506,6 +790,7 @@ const DoctorClinicalDashboard = () => {
           </div>
 
           {/* Procedure Management + Treatment Timeline */}
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-5 lg:gap-6 mt-6 md:mt-8">
 
             <ProcedureManagement />
