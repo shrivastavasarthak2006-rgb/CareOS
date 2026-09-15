@@ -32,76 +32,77 @@ console.log("✅ GEMINI_API_KEY loaded");
 // GEMINI INITIALIZATION
 // =====================================================
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(
+  process.env.GEMINI_API_KEY
+);
 
-// Primary model
-const primaryModel = genAI.getGenerativeModel({
-  model: "gemini-3.6-flash",
-});
+// =====================================================
+// GEMINI MODELS
+// =====================================================
 
-// Fallback model
-const fallbackModel = genAI.getGenerativeModel({
-  model: "gemini-3.6-flash-lite",
-});
+const models = [
+  "gemini-3.6-flash",
+  "gemini-3.6-flash-lite",
+  "gemini-3.1-flash-lite",
+  "gemini-2.5-flash",
+];
 
 console.log("✅ Gemini AI initialized");
-console.log("🔥 Primary Model: gemini-3.6-flash");
-console.log("🛟 Fallback Model: gemini-3.6-flash-lite");
+console.log("🔥 Available models:", models);
 
 // =====================================================
 // GEMINI GENERATION WITH FALLBACK
 // =====================================================
 
 async function generateWithFallback(prompt) {
-  try {
-    console.log("🔥 Trying Gemini 3.6 Flash...");
+  let lastError = null;
 
-    const result = await primaryModel.generateContent(prompt);
+  for (const modelName of models) {
+    try {
+      console.log(
+        `🔥 Trying Gemini model: ${modelName}`
+      );
 
-    console.log("✅ Primary Gemini response received");
+      const model = genAI.getGenerativeModel({
+        model: modelName,
+      });
 
-    return result.response.text();
+      const result = await model.generateContent(
+        prompt
+      );
 
-  } catch (primaryError) {
+      const text = result.response
+        .text()
+        .trim();
 
-    console.error(
-      "⚠️ PRIMARY GEMINI ERROR:",
-      primaryError.message
-    );
+      console.log(
+        `✅ Gemini response received from: ${modelName}`
+      );
 
-    // Only fallback for temporary availability/server errors
-    if (
-      primaryError.status === 503 ||
-      primaryError.status === 500 ||
-      primaryError.status === 502 ||
-      primaryError.status === 504
-    ) {
+      return text;
 
-      console.log("🛟 Trying fallback Gemini model...");
+    } catch (error) {
 
-      try {
-        const fallbackResult =
-          await fallbackModel.generateContent(prompt);
+      lastError = error;
 
-        console.log("✅ FALLBACK GEMINI RESPONSE RECEIVED");
+      console.error(
+        `⚠️ Gemini model failed: ${modelName}`
+      );
 
-        return fallbackResult.response.text();
+      console.error(
+        error?.message || error
+      );
 
-      } catch (fallbackError) {
-
-        console.error(
-          "🔥 FALLBACK GEMINI ERROR:",
-          fallbackError.message
-        );
-
-        throw fallbackError;
-      }
+      // Try the next model
+      continue;
     }
-
-    // For errors like 401 / 403 / 429,
-    // don't blindly retry another model
-    throw primaryError;
   }
+
+  console.error(
+    "❌ ALL GEMINI MODELS FAILED"
+  );
+
+  throw lastError;
 }
 
 // =====================================================
@@ -109,13 +110,14 @@ async function generateWithFallback(prompt) {
 // =====================================================
 
 app.get("/", (req, res) => {
+
   res.json({
     status: "OK",
     service: "CareOS Chatbot",
-    primaryModel: "gemini-3.6-flash",
-    fallbackModel: "gemini-3.6-flash-lite",
+    models,
     timestamp: new Date().toISOString(),
   });
+
 });
 
 // =====================================================
@@ -123,15 +125,21 @@ app.get("/", (req, res) => {
 // =====================================================
 
 app.get("/gemini-test", async (req, res) => {
+
   try {
 
-    console.log("🔥 GEMINI TEST ROUTE HIT");
+    console.log(
+      "🔥 GEMINI TEST ROUTE HIT"
+    );
 
     const reply = await generateWithFallback(
       "Reply only: OK"
     );
 
-    console.log("🔥 GEMINI TEST SUCCESS:", reply);
+    console.log(
+      "🔥 GEMINI TEST SUCCESS:",
+      reply
+    );
 
     res.json({
       success: true,
@@ -142,14 +150,18 @@ app.get("/gemini-test", async (req, res) => {
 
     console.error(
       "🔥 GEMINI TEST ERROR:",
-      error.message
+      error?.message || error
     );
 
     res.status(500).json({
       success: false,
-      error: error.message,
+      error:
+        error?.message ||
+        "Gemini unavailable",
     });
+
   }
+
 });
 
 // =====================================================
@@ -160,17 +172,24 @@ app.post("/chat", async (req, res) => {
 
   try {
 
-    const userMessage = req.body.message?.trim();
+    const userMessage =
+      req.body.message?.trim();
 
     if (!userMessage) {
+
       return res.status(400).json({
         reply: "Please enter a message.",
       });
+
     }
 
-    console.log("🤖 Chat request:", userMessage);
+    console.log(
+      "🤖 Chat request:",
+      userMessage
+    );
 
-    const language = req.body.language || "hinglish";
+    const language =
+      req.body.language || "hinglish";
 
     let languageInstruction = "";
 
@@ -224,11 +243,16 @@ USER QUESTION:
 ${userMessage}
 `;
 
-    console.log("🔥 Sending request to Gemini...");
+    console.log(
+      "🔥 Sending request to Gemini..."
+    );
 
-    const reply = await generateWithFallback(prompt);
+    const reply =
+      await generateWithFallback(prompt);
 
-    console.log("✅ AI response sent");
+    console.log(
+      "✅ AI response sent"
+    );
 
     return res.json({
       reply: reply.trim(),
@@ -239,7 +263,7 @@ ${userMessage}
 
     console.error(
       "🔥 CHAT ERROR:",
-      error.message
+      error?.message || error
     );
 
     return res.status(500).json({
@@ -247,20 +271,28 @@ ${userMessage}
       reply:
         "⚠️ CareOS AI is temporarily unavailable. Please try again in a moment.",
 
-      error: error.message,
+      error:
+        error?.message ||
+        "Gemini unavailable",
 
     });
+
   }
+
 });
 
 // =====================================================
 // START SERVER
 // =====================================================
 
-app.listen(PORT, "0.0.0.0", () => {
+app.listen(
+  PORT,
+  "0.0.0.0",
+  () => {
 
-  console.log(
-    `🚀 CareOS Backend running on port ${PORT}`
-  );
+    console.log(
+      `🚀 CareOS Backend running on port ${PORT}`
+    );
 
-});
+  }
+);

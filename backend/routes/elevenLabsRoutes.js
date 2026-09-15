@@ -60,8 +60,14 @@ const detectYes = (value = "") => {
 // ================================
 
 const generateAISummary = async (data) => {
-  try {
-    const prompt = `
+  const models = [
+    "gemini-3.6-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+    "gemini-2.5-flash",
+  ];
+
+  const prompt = `
 You are generating a patient intake summary for CareOS hospital staff.
 
 Create a COMPLETE and CLEAR summary using ALL the patient information provided below.
@@ -115,18 +121,17 @@ Vihara: ${data.vihara}
 SUMMARY REQUIREMENTS
 ========================
 
-1. Include ALL available information from the above sections.
+1. Include ALL available information.
 2. Do not diagnose the patient.
 3. Do not recommend medicines or treatment.
 4. Do not make assumptions.
 5. Do not change the patient's reported information.
 6. Keep the wording simple and professional.
 7. Use clear section labels.
-8. The summary can be multiple sentences.
-9. Do not unnecessarily repeat the same information.
-10. This summary is for reception and doctor review.
+8. Do not unnecessarily repeat information.
+9. This summary is for reception and doctor review.
 
-Format the response like this:
+Format:
 
 Patient Overview:
 [complete basic patient information]
@@ -144,21 +149,51 @@ Vihara:
 [available lifestyle information]
 `;
 
-    const response = await ai.models.generateContent({
-      model: "gemini-3.6-flash",
-      contents: prompt,
-    });
+  // ================================
+  // TRY GEMINI MODELS ONE BY ONE
+  // ================================
 
-    return (
-      response.text?.trim() ||
-      `${data.name} reported ${data.problem}.`
-    );
+  for (const model of models) {
+    try {
+      console.log(`🤖 Trying Gemini model: ${model}`);
 
-  } catch (error) {
-    console.error("❌ Gemini Summary Error:", error);
+      const response = await ai.models.generateContent({
+        model: model,
+        contents: prompt,
+      });
 
-    // Fallback summary containing ALL available information
-    return `
+      const summary = response.text?.trim();
+
+      if (summary) {
+        console.log(
+          `✅ Gemini summary generated using: ${model}`
+        );
+
+        return summary;
+      }
+    } catch (error) {
+      console.error(
+        `⚠️ Gemini model failed: ${model}`
+      );
+
+      console.error(
+        error?.message || error
+      );
+
+      // Try next model
+      continue;
+    }
+  }
+
+  // ================================
+  // ALL GEMINI MODELS FAILED
+  // ================================
+
+  console.error(
+    "❌ All Gemini models failed. Using fallback summary."
+  );
+
+  return `
 Patient Overview:
 Name: ${data.name}
 Age: ${data.age}
@@ -167,13 +202,15 @@ Phone Number: ${data.phoneNumber}
 Health Concern:
 Problem: ${data.problem}
 Duration: ${data.duration || "Not provided"}
-Severity: ${data.severity}
+Severity: ${data.severity || "Not provided"}
 Previous Consultation: ${
-      data.previousConsultation ? "Yes" : "No"
-    }
+    data.previousConsultation ? "Yes" : "No"
+  }
 Medical Records: ${
-      data.hasMedicalRecords ? "Available" : "Not available"
-    }
+    data.hasMedicalRecords
+      ? "Available"
+      : "Not available"
+  }
 
 Dashavidha Pariksha:
 Prakriti: ${data.prakriti || "Not provided"}
@@ -184,8 +221,8 @@ Pramana: ${data.pramana || "Not provided"}
 Satmya: ${data.satmya || "Not provided"}
 Satva: ${data.satva || "Not provided"}
 Ahara Shakti: ${
-      data.aharaShakti || "Not provided"
-    }
+    data.aharaShakti || "Not provided"
+  }
 Vaya: ${data.vaya || "Not provided"}
 Bala: ${data.bala || "Not provided"}
 
@@ -195,7 +232,6 @@ ${data.ahara || "Not provided"}
 Vihara:
 ${data.vihara || "Not provided"}
 `.trim();
-  }
 };
 
 // ================================
